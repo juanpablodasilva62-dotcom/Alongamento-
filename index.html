@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Alongamento</title>
+  <meta name="description" content="Rotina reichiana de alongamento e respiração, pra fazer deitado no chão.">
+  <meta name="theme-color" content="#F6F1E8">
+  <meta name="color-scheme" content="light">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Alongamento">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="img/icone.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="img/icone-180.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Hanken+Grotesk:wght@400;500&display=swap">
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+<main id="app">
+
+  <!-- 1. Sinais normais: só na primeira abertura -->
+  <section class="tela tela-sinais" id="tela-sinais" hidden>
+    <div class="tela-miolo">
+      <p class="rotulo">Antes de começar</p>
+      <h1 class="titulo-grande">Sinais normais</h1>
+      <p class="texto-grande" id="texto-sinais"></p>
+    </div>
+    <footer class="tela-pe">
+      <button type="button" class="btn btn-contorno btn-largo" id="btn-entendi">entendi</button>
+    </footer>
+  </section>
+
+  <!-- 2. Início -->
+  <section class="tela tela-inicio" id="tela-inicio" hidden>
+    <header class="inicio-topo">
+      <h1 class="marca">Alongamento</h1>
+      <p class="marca-sub">Rotina reichiana de alongamento e respiração. Deitado no chão, de costas, joelhos dobrados.</p>
+    </header>
+
+    <nav class="rotas" aria-label="Rotas">
+      <button type="button" class="rota" data-rota="completa">
+        <span class="rota-nome">Completa</span>
+        <span class="rota-duracao" data-duracao="completa"></span>
+      </button>
+      <button type="button" class="rota" data-rota="curta">
+        <span class="rota-nome">Curta</span>
+        <span class="rota-duracao" data-duracao="curta"></span>
+      </button>
+      <div class="rota rota-um">
+        <span class="rota-nome">Um segmento</span>
+        <span class="rota-duracao">Chegar antes, Ficar depois</span>
+      </div>
+    </nav>
+
+    <ol class="segmentos" id="lista-segmentos" aria-label="Segmentos"></ol>
+
+    <footer class="inicio-pe">
+      <button type="button" class="btn btn-texto" id="btn-ajustes">Ajustes</button>
+    </footer>
+  </section>
+
+  <!-- 3. Sessão -->
+  <section class="tela tela-sessao" id="tela-sessao" hidden>
+    <header class="sessao-topo">
+      <div class="barra-rota" aria-hidden="true"><div class="barra-rota-cheia" id="barra-rota"></div></div>
+      <p class="segmento-linha">
+        <span class="ponto-seg" aria-hidden="true"></span>
+        <span class="segmento-nome" id="sessao-segmento"></span>
+        <span class="segmento-partes" id="sessao-partes"></span>
+      </p>
+    </header>
+
+    <div class="sessao-centro">
+      <h1 class="exercicio-nome" id="sessao-exercicio"></h1>
+
+      <div class="guia" id="guia">
+        <svg class="anel" viewBox="0 0 200 200" aria-hidden="true">
+          <circle class="anel-fundo" cx="100" cy="100" r="98"></circle>
+          <circle class="anel-cheio" id="anel-cheio" cx="100" cy="100" r="98"></circle>
+        </svg>
+        <div class="guia-forma" id="guia-forma"></div>
+        <div class="ilustracao" id="ilustracao" aria-hidden="true"></div>
+        <div class="ponto-ocular" id="ponto-ocular" hidden></div>
+      </div>
+
+      <p class="contador" id="contador" aria-live="off">
+        <span class="contador-numero" id="contador-numero"></span>
+        <span class="contador-rotulo" id="contador-rotulo"></span>
+      </p>
+      <p class="deixa" id="deixa"></p>
+    </div>
+
+    <div class="sessao-texto">
+      <p class="como" id="sessao-como"></p>
+      <p class="respiracao" id="sessao-respiracao"></p>
+      <p class="aviso" id="aviso-voz" hidden>Sem voz em português neste aparelho. Seguindo só em texto.</p>
+    </div>
+
+    <footer class="sessao-controles">
+      <button type="button" class="btn btn-texto" id="btn-anterior">anterior</button>
+      <button type="button" class="btn btn-contorno" id="btn-tocar">pausar</button>
+      <button type="button" class="btn btn-texto" id="btn-proximo">próximo</button>
+    </footer>
+    <div class="forte-linha">
+      <button type="button" class="btn btn-forte" id="btn-forte">ficou forte</button>
+    </div>
+  </section>
+
+  <!-- 4. Aterrar -->
+  <section class="tela tela-aterrar" id="tela-aterrar" hidden>
+    <div class="tela-miolo">
+      <p class="rotulo">Aterrar</p>
+      <h1 class="titulo-grande">Ficou forte. Tudo bem.</h1>
+      <p class="texto-grande">Abre os olhos, olha o quarto, apoia os pés no chão, solta o ar devagar.</p>
+      <div class="guia guia-aterrar" id="guia-aterrar">
+        <div class="guia-forma" id="aterrar-forma"></div>
+      </div>
+      <p class="deixa" id="aterrar-deixa"></p>
+    </div>
+    <footer class="tela-pe acoes">
+      <button type="button" class="btn btn-contorno" id="btn-aterrar-voltar" hidden>voltar</button>
+      <button type="button" class="btn btn-texto" id="btn-aterrar-encerrar">encerrar</button>
+    </footer>
+  </section>
+
+  <!-- 5. Ficar -->
+  <section class="tela tela-ficar" id="tela-ficar" hidden>
+    <div class="tela-miolo ficar-miolo" id="ficar-miolo">
+      <p class="rotulo">Ficar</p>
+      <h1 class="titulo-grande" id="ficar-titulo">Ficar</h1>
+      <p class="texto-grande" id="ficar-texto"></p>
+    </div>
+    <footer class="tela-pe acoes ficar-acoes" id="ficar-acoes" hidden>
+      <button type="button" class="btn btn-texto btn-claro" id="btn-ficar-continuar">continuar</button>
+      <button type="button" class="btn btn-contorno btn-claro" id="btn-ficar-encerrar">encerrar</button>
+    </footer>
+    <div class="ficar-escuro" id="ficar-escuro" aria-hidden="true"></div>
+  </section>
+
+</main>
+
+<!-- Folha de ajustes -->
+<div class="folha-fundo" id="folha-fundo"></div>
+<div class="folha" id="folha-ajustes" role="dialog" aria-modal="true" aria-labelledby="ajustes-titulo" aria-hidden="true">
+  <div class="folha-puxador" aria-hidden="true"></div>
+  <h2 class="folha-titulo" id="ajustes-titulo">Ajustes</h2>
+
+  <section class="ajuste-grupo">
+    <h3 class="ajuste-grupo-titulo">Ritmo da respiração</h3>
+    <div class="ajuste-linha">
+      <span class="ajuste-rotulo">entra</span>
+      <div class="passo">
+        <button type="button" class="passo-btn" data-ajuste="entra" data-delta="-1" aria-label="menos um segundo em entra">−</button>
+        <span class="passo-valor" id="aj-entra"></span>
+        <button type="button" class="passo-btn" data-ajuste="entra" data-delta="1" aria-label="mais um segundo em entra">+</button>
+      </div>
+    </div>
+    <div class="ajuste-linha">
+      <span class="ajuste-rotulo">sai</span>
+      <div class="passo">
+        <button type="button" class="passo-btn" data-ajuste="sai" data-delta="-1" aria-label="menos um segundo em sai">−</button>
+        <span class="passo-valor" id="aj-sai"></span>
+        <button type="button" class="passo-btn" data-ajuste="sai" data-delta="1" aria-label="mais um segundo em sai">+</button>
+      </div>
+    </div>
+    <div class="ajuste-linha">
+      <span class="ajuste-rotulo">pausa</span>
+      <div class="passo">
+        <button type="button" class="passo-btn" data-ajuste="pausa" data-delta="-1" aria-label="menos um segundo em pausa">−</button>
+        <span class="passo-valor" id="aj-pausa"></span>
+        <button type="button" class="passo-btn" data-ajuste="pausa" data-delta="1" aria-label="mais um segundo em pausa">+</button>
+      </div>
+    </div>
+    <p class="ajuste-nota" id="aj-ritmo-nota"></p>
+  </section>
+
+  <section class="ajuste-grupo">
+    <h3 class="ajuste-grupo-titulo">Voz</h3>
+    <label class="ajuste-linha">
+      <span class="ajuste-rotulo">voz ligada</span>
+      <input type="checkbox" class="chave" id="aj-voz">
+    </label>
+    <label class="ajuste-linha ajuste-coluna">
+      <span class="ajuste-rotulo">qual voz</span>
+      <select class="seletor" id="aj-voz-nome"></select>
+    </label>
+    <label class="ajuste-linha ajuste-coluna">
+      <span class="ajuste-rotulo">velocidade <span class="ajuste-valor" id="aj-velocidade-voz-valor"></span></span>
+      <input type="range" class="faixa" id="aj-velocidade-voz" min="0.7" max="1.3" step="0.05">
+    </label>
+    <div class="ajuste-linha">
+      <p class="aviso" id="aviso-voz-ajustes" hidden>Sem voz em português neste aparelho.</p>
+      <button type="button" class="btn btn-texto" id="aj-testar-voz">ouvir</button>
+    </div>
+  </section>
+
+  <section class="ajuste-grupo">
+    <h3 class="ajuste-grupo-titulo">Sons</h3>
+    <label class="ajuste-linha">
+      <span class="ajuste-rotulo">sons ligados</span>
+      <input type="checkbox" class="chave" id="aj-sons">
+    </label>
+    <label class="ajuste-linha ajuste-coluna">
+      <span class="ajuste-rotulo">volume <span class="ajuste-valor" id="aj-volume-valor"></span></span>
+      <input type="range" class="faixa" id="aj-volume" min="0" max="1" step="0.05">
+    </label>
+  </section>
+
+  <section class="ajuste-grupo">
+    <h3 class="ajuste-grupo-titulo">Tela</h3>
+    <label class="ajuste-linha">
+      <span class="ajuste-rotulo">manter tela ligada</span>
+      <input type="checkbox" class="chave" id="aj-tela-ligada">
+    </label>
+    <p class="ajuste-nota" id="aj-tela-nota" hidden>Este navegador não deixa segurar a tela ligada. Aumenta o tempo de bloqueio do aparelho antes da sessão.</p>
+  </section>
+
+  <section class="ajuste-grupo">
+    <h3 class="ajuste-grupo-titulo">Ponto ocular</h3>
+    <div class="ajuste-linha ajuste-coluna">
+      <span class="ajuste-rotulo">velocidade do ponto</span>
+      <div class="opcoes" role="radiogroup" aria-label="velocidade do ponto ocular">
+        <label class="opcao"><input type="radio" name="velocidadePonto" value="lento"><span>lento</span></label>
+        <label class="opcao"><input type="radio" name="velocidadePonto" value="medio"><span>médio</span></label>
+        <label class="opcao"><input type="radio" name="velocidadePonto" value="rapido"><span>rápido</span></label>
+      </div>
+    </div>
+  </section>
+
+  <section class="ajuste-grupo ajuste-grupo-fim">
+    <button type="button" class="btn btn-texto" id="aj-rever-sinais">rever os sinais normais</button>
+    <button type="button" class="btn btn-contorno btn-largo" id="aj-fechar">fechar</button>
+  </section>
+</div>
+
+<script src="js/rotina.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
