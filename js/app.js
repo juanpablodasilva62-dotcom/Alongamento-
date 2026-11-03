@@ -964,6 +964,179 @@ Ajustes.aoMudar((chave, valor) => {
   if (valor && Sessao.ativa) WakeLock.pedir();
   else if (!valor) WakeLock.soltar();
 });
+
+/* ---------- 10. aterrar ---------- */
+
+const Aterrar = {
+  ativo: false,
+  inicio: 0,
+  rafId: 0,
+  ultimaFase: null,
+  liberado: false,
+
+  // pausa tudo e abre o guia só de expiração por 1 min
+  abrir() {
+    if (!Sessao.ativa) return;
+    Sessao.pausar();
+    this.ativo = true;
+    this.inicio = agora();
+    this.ultimaFase = null;
+    this.liberado = false;
+    $('btn-aterrar-voltar').hidden = true;
+    $('aterrar-deixa').textContent = '';
+    $('aterrar-forma').style.transform = 'scale(1)';
+    Telas.mostrar('tela-aterrar');
+    Voz.falar(R.textoAterrar, { tipo: 'texto' });
+    cancelAnimationFrame(this.rafId);
+    const laco = () => {
+      if (!this.ativo) return;
+      this.atualizar();
+      this.rafId = requestAnimationFrame(laco);
+    };
+    this.rafId = requestAnimationFrame(laco);
+  },
+
+  // 6 s soltando com deixa, 3 s deixando o ar entrar em silêncio
+  atualizar() {
+    const t = (agora() - this.inicio) / 1000;
+    const ciclo = 9;
+    const tc = t - Math.floor(t / ciclo) * ciclo;
+    let fase;
+    let escala;
+    if (tc < 6) {
+      fase = 'solta';
+      escala = 1 - 0.38 * suave(tc / 6);
+    } else {
+      fase = 'entra';
+      escala = 0.62 + 0.38 * suave((tc - 6) / 3);
+    }
+    $('aterrar-forma').style.transform = `scale(${escala.toFixed(4)})`;
+    if (fase !== this.ultimaFase) {
+      this.ultimaFase = fase;
+      $('aterrar-deixa').textContent = fase === 'solta' ? 'solta o ar devagar' : 'deixa o ar entrar';
+      if (fase === 'solta') Voz.deixa('solta');
+    }
+    if (!this.liberado && t >= R.duracaoAterrar) {
+      this.liberado = true;
+      $('btn-aterrar-voltar').hidden = false;
+    }
+  },
+
+  fechar() {
+    this.ativo = false;
+    cancelAnimationFrame(this.rafId);
+    this.rafId = 0;
+    Voz.silenciar();
+  },
+
+  // volta pra sessão, ainda pausada: a pessoa toca quando quiser
+  voltar() {
+    this.fechar();
+    Telas.mostrar('tela-sessao');
+    Render.botaoTocar();
+  },
+
+  encerrar() {
+    this.fechar();
+    Sessao.encerrar();
+  }
+};
+
+aoIniciar.push(() => {
+  $('btn-aterrar-voltar').addEventListener('click', () => Aterrar.voltar());
+  $('btn-aterrar-encerrar').addEventListener('click', () => Aterrar.encerrar());
+});
+
+/* ---------- 11. ficar ---------- */
+
+const Ficar = {
+  ativo: false,
+  aceso: false,
+  terminado: false,
+  nivel: 0, // opacidade atual do escuro, 0 a 0,97
+  ultimoQuadro: 0,
+  rafId: 0,
+
+  iniciar(passo) {
+    this.ativo = true;
+    this.aceso = false;
+    this.terminado = false;
+    this.nivel = 0;
+    this.ultimoQuadro = agora();
+    $('ficar-titulo').textContent = passo.exercicio.nome;
+    $('ficar-texto').textContent = passo.exercicio.como;
+    $('ficar-acoes').hidden = true;
+    $('btn-ficar-continuar').hidden = false;
+    $('ficar-escuro').style.opacity = '0';
+    $('ficar-miolo').style.opacity = '1';
+    $('tela-ficar').classList.remove('escurecida');
+    Telas.mostrar('tela-ficar');
+    cancelAnimationFrame(this.rafId);
+    const laco = () => {
+      if (!this.ativo) return;
+      this.animar();
+      this.rafId = requestAnimationFrame(laco);
+    };
+    this.rafId = requestAnimationFrame(laco);
+  },
+
+  // escurece aos poucos; um toque acende um pouco; o texto some junto com a luz
+  animar() {
+    const t = agora();
+    const dt = Math.min(0.1, (t - this.ultimoQuadro) / 1000);
+    this.ultimoQuadro = t;
+    const alvo = this.aceso ? 0.55 : 0.97;
+    const rampa = reduzMovimento ? 8 : 40; // segundos até escurecer de vez
+    let velocidade;
+    if (alvo > this.nivel) velocidade = 0.97 / rampa; // escurecendo, devagar
+    else velocidade = 1.2;                             // acendendo, rápido
+    if (alvo > this.nivel) this.nivel = Math.min(alvo, this.nivel + velocidade * dt);
+    else this.nivel = Math.max(alvo, this.nivel - velocidade * dt);
+
+    $('ficar-escuro').style.opacity = this.nivel.toFixed(3);
+    $('tela-ficar').classList.toggle('escurecida', this.nivel > 0.45);
+    const textoVisivel = this.aceso || this.terminado ? 1 : limitar(1 - (this.nivel - 0.5) / 0.45, 0, 1);
+    $('ficar-miolo').style.opacity = textoVisivel.toFixed(3);
+  },
+
+  tocar() {
+    if (!this.ativo || this.terminado) return;
+    this.aceso = true;
+    $('ficar-acoes').hidden = false;
+  },
+
+  continuar() {
+    this.aceso = false;
+    $('ficar-acoes').hidden = true;
+  },
+
+  // fim da rota: acende um pouco e mostra só "encerrar"
+  mostrarFim() {
+    if (!this.ativo) this.iniciar({ exercicio: { nome: 'Pronto.', como: '' } });
+    this.terminado = true;
+    this.aceso = true;
+    $('ficar-titulo').textContent = 'Pronto.';
+    $('ficar-texto').textContent = 'Fica mais um pouco se quiser. Quando levantar, levanta devagar.';
+    $('btn-ficar-continuar').hidden = true;
+    $('ficar-acoes').hidden = false;
+  },
+
+  parar() {
+    this.ativo = false;
+    cancelAnimationFrame(this.rafId);
+    this.rafId = 0;
+    $('tela-ficar').classList.remove('escurecida');
+  }
+};
+
+aoIniciar.push(() => {
+  $('tela-ficar').addEventListener('click', (e) => {
+    if (e.target.closest('button')) return;
+    Ficar.tocar();
+  });
+  $('btn-ficar-continuar').addEventListener('click', () => Ficar.continuar());
+  $('btn-ficar-encerrar').addEventListener('click', () => Sessao.encerrar());
+});
 /* ---------- 13. arranque ---------- */
 
 function iniciarApp() {
