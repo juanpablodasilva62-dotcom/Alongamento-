@@ -1137,6 +1137,15 @@ aoIniciar.push(() => {
   $('btn-ficar-continuar').addEventListener('click', () => Ficar.continuar());
   $('btn-ficar-encerrar').addEventListener('click', () => Sessao.encerrar());
 });
+
+/* ---------- 12. PWA ---------- */
+
+aoIniciar.push(() => {
+  if (!('serviceWorker' in navigator)) return;
+  const registrar = () => navigator.serviceWorker.register('sw.js').catch(() => { /* sem PWA, o app segue igual */ });
+  if (document.readyState === 'complete') registrar();
+  else window.addEventListener('load', registrar);
+});
 /* ---------- 13. arranque ---------- */
 
 function iniciarApp() {
