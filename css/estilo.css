@@ -305,7 +305,6 @@ button:focus-visible, input:focus-visible, select:focus-visible {
   height: 100%;
   width: 0%;
   background: var(--cor-seg);
-  transition: width 1s linear;
 }
 
 .segmento-linha {
@@ -523,7 +522,6 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 .ficar-miolo {
   position: relative;
   z-index: 1;
-  transition: opacity 2s linear;
 }
 
 .ficar-acoes {
@@ -830,6 +828,4 @@ button:focus-visible, input:focus-visible, select:focus-visible {
   .folha, .folha-fundo, .btn, .chave, .chave::after, .opcao span, .ilustracao, .deixa {
     transition: none;
   }
-  .barra-rota-cheia { transition: none; }
-  .ficar-miolo { transition: opacity 0.6s linear; }
 }

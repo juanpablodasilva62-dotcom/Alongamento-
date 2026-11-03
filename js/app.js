@@ -519,6 +519,451 @@ const Voz = {
 
 aoIniciar.push(() => Voz.iniciar());
 Ajustes.aoMudar((chave) => { if (chave === 'voz' || chave === 'vozNome') Voz.escolher(); });
+
+/* ---------- 8. guia, ilustração e ponto ocular ---------- */
+
+const DEIXAS = { entra: 'entra', sai: 'solta', pausa: 'espera' };
+
+const Guia = {
+  circunferencia: 2 * Math.PI * 98,
+  ultimaEscala: -1,
+  ultimoAnel: -1,
+
+  escala(s) {
+    if (Math.abs(s - this.ultimaEscala) < 0.0005) return;
+    this.ultimaEscala = s;
+    $('guia-forma').style.transform = `scale(${s.toFixed(4)})`;
+  },
+
+  // p = fração do tempo já passada; o anel esvazia conforme o tempo anda
+  anel(p) {
+    const v = Math.round(this.circunferencia * limitar(p, 0, 1) * 100) / 100;
+    if (v === this.ultimoAnel) return;
+    this.ultimoAnel = v;
+    $('anel-cheio').style.strokeDashoffset = v;
+  },
+
+  zerar() {
+    this.ultimaEscala = -1;
+    this.ultimoAnel = -1;
+  }
+};
+
+const Ilustracao = {
+  cache: new Map(),
+  pedido: 0,
+
+  // injeta o SVG inline pra cor do segmento valer no traço
+  async mostrar(id) {
+    const el = $('ilustracao');
+    const meuPedido = ++this.pedido;
+    el.hidden = false;
+    let svg = this.cache.get(id);
+    if (svg === undefined) {
+      try {
+        const resposta = await fetch(`img/${encodeURIComponent(id)}.svg`);
+        svg = resposta.ok ? await resposta.text() : '';
+      } catch (e) {
+        svg = '';
+      }
+      this.cache.set(id, svg);
+    }
+    if (meuPedido !== this.pedido) return; // já trocou de exercício
+    el.innerHTML = svg;
+  },
+
+  esconder() {
+    this.pedido++;
+    const el = $('ilustracao');
+    el.hidden = true;
+    el.innerHTML = '';
+  }
+};
+
+const Ponto = {
+  // posição relativa ao tamanho do guia: metade do tempo em círculos,
+  // metade de um lado pro outro
+  posicao(t, total) {
+    const periodo = R.pontoOcular[Ajustes.dados.velocidadePonto] || R.pontoOcular.medio;
+    const raio = 0.40;
+    const metade = total / 2;
+    const noCirculo = (tt) => {
+      const ang = (2 * Math.PI * tt) / periodo - Math.PI / 2;
+      return { x: raio * Math.cos(ang), y: raio * Math.sin(ang) };
+    };
+    if (t < metade) return noCirculo(t);
+    const t2 = t - metade;
+    const lado = { x: raio * Math.sin((2 * Math.PI * t2) / periodo), y: 0 };
+    // nos primeiros 1,5 s desliza do fim do círculo pro vaivém, sem pulo
+    const mistura = suave(t2 / 1.5);
+    const fim = noCirculo(metade);
+    return { x: fim.x + (lado.x - fim.x) * mistura, y: fim.y + (lado.y - fim.y) * mistura };
+  },
+
+  aplicar(pos) {
+    const tam = $('guia').clientWidth;
+    $('ponto-ocular').style.transform = `translate(${(pos.x * tam).toFixed(1)}px, ${(pos.y * tam).toFixed(1)}px)`;
+  },
+
+  mostrar(sim) {
+    $('ponto-ocular').hidden = !sim;
+  }
+};
+
+/* ---------- 9. motor da sessão ---------- */
+
+// cálculo puro: o que mostrar no instante t (em s) de um passo
+const Motor = {
+  calcular(passo, t) {
+    if (passo.tipo === 'intro') {
+      const d = passo.duracao;
+      return { escala: 0.62, anel: t / d, numero: '', rotulo: '', deixa: '', restante: d - t, fim: t >= d };
+    }
+    const c = passo.contagem;
+    const a = Ajustes.dados;
+
+    if (c.tipo === 'respiracoes') {
+      const ciclo = a.entra + a.sai + a.pausa;
+      const total = c.valor * ciclo;
+      const n = Math.floor(t / ciclo);
+      const tc = t - n * ciclo;
+      let fase;
+      let p;
+      if (tc < a.entra) { fase = 'entra'; p = tc / a.entra; }
+      else if (tc < a.entra + a.sai) { fase = 'sai'; p = (tc - a.entra) / a.sai; }
+      else { fase = 'pausa'; p = a.pausa ? (tc - a.entra - a.sai) / a.pausa : 1; }
+      const escala = fase === 'entra' ? 0.62 + 0.38 * suave(p)
+        : fase === 'sai' ? 1 - 0.38 * suave(p)
+        : 0.62;
+      const faltam = Math.max(0, c.valor - n);
+      return {
+        escala, anel: t / total, numero: faltam, rotulo: faltam === 1 ? 'respiração' : 'respirações',
+        deixa: DEIXAS[fase], fase, ciclo: n, restante: total - t, fim: t >= total
+      };
+    }
+
+    if (c.tipo === 'vezes') {
+      const intervalo = c.intervalo || R.intervaloVezPadrao;
+      const total = c.valor * intervalo;
+      const n = Math.floor(t / intervalo);
+      const p = (t - n * intervalo) / intervalo;
+      // cresce em 70% do intervalo (segura) e solta nos 30% finais
+      const escala = p < 0.7 ? 0.62 + 0.38 * (p / 0.7) : 1 - 0.38 * suave((p - 0.7) / 0.3);
+      const faltam = Math.max(0, c.valor - n);
+      return {
+        escala, anel: t / total, numero: faltam, rotulo: faltam === 1 ? 'vez' : 'vezes',
+        deixa: '', vez: n, restante: total - t, fim: t >= total
+      };
+    }
+
+    // segundos, com ou sem "cada lado"
+    const lados = c.cadaLado ? 2 : 1;
+    const total = c.valor * lados;
+    const lado = c.cadaLado && t >= c.valor ? 2 : 1;
+    const tLado = t - (lado - 1) * c.valor;
+    const faltam = Math.max(0, Math.ceil(c.valor - tLado));
+    const estado = {
+      escala: 0.8, anel: tLado / c.valor, numero: faltam, rotulo: faltam === 1 ? 'segundo' : 'segundos',
+      deixa: c.cadaLado ? (lado === 1 ? 'primeiro lado' : 'outro lado') : '',
+      lado, restante: total - t, fim: t >= total
+    };
+    if (passo.exercicio.ponto) estado.ponto = Ponto.posicao(t, total);
+    return estado;
+  }
+};
+
+const Render = {
+  ultimo: { numero: null, rotulo: null, deixa: null },
+
+  montarPasso(passo) {
+    const seg = passo.segmento;
+    $('tela-sessao').style.setProperty('--cor-seg', seg.cor);
+    $('sessao-segmento').textContent = seg.nome;
+    $('sessao-partes').textContent = seg.partes || '';
+    this.ultimo = { numero: null, rotulo: null, deixa: null };
+    Guia.zerar();
+
+    if (passo.tipo === 'intro') {
+      $('sessao-exercicio').textContent = seg.nome;
+      $('sessao-como').textContent = seg.intro;
+      $('sessao-respiracao').textContent = '';
+      $('contador').hidden = true;
+      Ilustracao.esconder();
+      Ponto.mostrar(false);
+    } else {
+      const ex = passo.exercicio;
+      $('sessao-exercicio').textContent = ex.nome;
+      $('sessao-como').textContent = ex.como;
+      $('sessao-respiracao').textContent = ex.respiracao === 'livre' ? 'respiração livre' : (ex.respiracao || '');
+      $('contador').hidden = false;
+      if (ex.ponto) {
+        Ilustracao.esconder();
+        Ponto.mostrar(true);
+      } else {
+        Ponto.mostrar(false);
+        Ilustracao.mostrar(ex.id);
+      }
+    }
+    this.botaoTocar();
+  },
+
+  aplicar(estado) {
+    Guia.escala(estado.escala);
+    Guia.anel(estado.anel);
+    const numero = String(estado.numero);
+    if (numero !== this.ultimo.numero) {
+      this.ultimo.numero = numero;
+      $('contador-numero').textContent = numero;
+    }
+    if (estado.rotulo !== this.ultimo.rotulo) {
+      this.ultimo.rotulo = estado.rotulo;
+      $('contador-rotulo').textContent = estado.rotulo;
+    }
+    if (estado.deixa !== this.ultimo.deixa) {
+      this.ultimo.deixa = estado.deixa;
+      $('deixa').textContent = estado.deixa;
+    }
+    if (estado.ponto) Ponto.aplicar(estado.ponto);
+  },
+
+  barra(p) {
+    $('barra-rota').style.width = `${(limitar(p, 0, 1) * 100).toFixed(2)}%`;
+  },
+
+  botaoTocar() {
+    $('btn-tocar').textContent = Sessao.pausado ? 'tocar' : 'pausar';
+  }
+};
+
+const Sessao = {
+  rota: null,
+  indice: -1,
+  passo: null,
+  ativa: false,
+  pausado: true,
+  inicio: 0,
+  acumulado: 0,
+  duracaoPasso: 0,
+  antesDoPasso: 0,
+  marcas: null,
+  rafId: 0,
+  intervaloId: 0,
+
+  iniciar(tipo, segmentoId) {
+    Som.preparar();
+    Voz.preparar();
+    this.rota = Rota.montar(tipo, segmentoId);
+    if (!this.rota.passos.length) return;
+    this.ativa = true;
+    WakeLock.pedir();
+    this.irPara(0);
+    this.ligarRelogio();
+  },
+
+  // segundos decorridos no passo atual, descontando pausas
+  tempo() {
+    const ms = this.pausado ? this.acumulado : this.acumulado + (agora() - this.inicio);
+    return ms / 1000;
+  },
+
+  irPara(i) {
+    if (i < 0 || i >= this.rota.passos.length) return;
+    this.indice = i;
+    this.passo = this.rota.passos[i];
+    this.acumulado = 0;
+    this.inicio = agora();
+    this.pausado = false;
+    this.duracaoPasso = Rota.duracaoPasso(this.passo);
+    this.antesDoPasso = this.rota.passos.slice(0, i).reduce((soma, p) => soma + Rota.duracaoPasso(p), 0);
+    this.marcas = { fase: null, vez: -1, lado: 1, tiques: {} };
+    Voz.silenciar();
+
+    const ex = this.passo.exercicio;
+    if (ex && ex.escurecer) {
+      Ficar.iniciar(this.passo);
+    } else {
+      Ficar.parar();
+      Render.montarPasso(this.passo);
+      Telas.mostrar('tela-sessao');
+    }
+
+    const seg = this.passo.segmento;
+    const texto = this.passo.tipo === 'intro' ? `${seg.nome}. ${seg.intro}` : `${ex.nome}. ${ex.como}`;
+    Voz.falar(texto, { tipo: 'texto' });
+    this.atualizar();
+  },
+
+  proximo() {
+    if (!this.ativa) return;
+    if (this.indice + 1 < this.rota.passos.length) this.irPara(this.indice + 1);
+    else this.terminar();
+  },
+
+  // como num tocador: volta ao começo do passo; se já está no começo, vai pro anterior
+  anterior() {
+    if (!this.ativa) return;
+    if (this.tempo() > 3 || this.indice === 0) this.irPara(this.indice);
+    else this.irPara(this.indice - 1);
+  },
+
+  pausar() {
+    if (this.pausado || !this.ativa) return;
+    this.acumulado += agora() - this.inicio;
+    this.pausado = true;
+    Voz.silenciar();
+    Render.botaoTocar();
+  },
+
+  retomar() {
+    if (!this.pausado || !this.ativa) return;
+    Som.preparar();
+    this.inicio = agora();
+    this.pausado = false;
+    Render.botaoTocar();
+  },
+
+  alternar() {
+    if (this.pausado) this.retomar();
+    else this.pausar();
+  },
+
+  encerrar() {
+    this.ativa = false;
+    this.pausado = true;
+    this.desligarRelogio();
+    Voz.silenciar();
+    WakeLock.soltar();
+    Ficar.parar();
+    Ilustracao.esconder();
+    Telas.mostrar('tela-inicio');
+  },
+
+  // fim da rota: acorde e tela de fim, dentro do Ficar
+  terminar() {
+    this.pausado = true;
+    this.desligarRelogio();
+    Voz.silenciar();
+    Som.acorde();
+    Ficar.mostrarFim();
+  },
+
+  ligarRelogio() {
+    this.desligarRelogio();
+    const laco = () => {
+      this.atualizar();
+      this.rafId = requestAnimationFrame(laco);
+    };
+    this.rafId = requestAnimationFrame(laco);
+    // reserva pra quando o rAF congela (aba em segundo plano)
+    this.intervaloId = setInterval(() => this.atualizar(), 500);
+  },
+
+  desligarRelogio() {
+    cancelAnimationFrame(this.rafId);
+    clearInterval(this.intervaloId);
+    this.rafId = 0;
+    this.intervaloId = 0;
+  },
+
+  atualizar() {
+    if (!this.ativa || !this.passo) return;
+    const t = this.tempo();
+    const estado = Motor.calcular(this.passo, t);
+    if (!this.pausado) this.eventos(estado);
+    if (!(this.passo.exercicio && this.passo.exercicio.escurecer)) {
+      Render.aplicar(estado);
+      Render.barra((this.antesDoPasso + Math.min(t, this.duracaoPasso)) / this.rota.duracao);
+    }
+    if (estado.fim && !this.pausado) this.concluirPasso();
+  },
+
+  // sons e deixas de voz nas viradas de fase, repetição e lado, e nos 3 últimos segundos
+  eventos(estado) {
+    const m = this.marcas;
+    const passo = this.passo;
+    if (passo.tipo === 'exercicio') {
+      const c = passo.contagem;
+      if (c.tipo === 'respiracoes' && estado.fase !== m.fase) {
+        m.fase = estado.fase;
+        const pausaZerada = estado.fase === 'pausa' && Ajustes.dados.pausa === 0;
+        if (!estado.fim && !pausaZerada) Voz.deixa(DEIXAS[estado.fase]);
+      }
+      if (c.tipo === 'vezes' && estado.vez !== m.vez) {
+        m.vez = estado.vez;
+        if (!estado.fim) Som.marca();
+      }
+      if (c.tipo === 'segundos' && c.cadaLado && estado.lado !== m.lado) {
+        m.lado = estado.lado;
+        if (estado.lado === 2) {
+          Som.sino();
+          Voz.falar('troca de lado', { tipo: 'deixa' });
+        }
+      }
+      if (passo.exercicio.escurecer) return; // o Ficar termina em silêncio
+    }
+    const r = Math.ceil(estado.restante);
+    if (r >= 1 && r <= 3 && !m.tiques[r]) {
+      m.tiques[r] = true;
+      Som.tique();
+    }
+  },
+
+  concluirPasso() {
+    const ultimo = this.indice === this.rota.passos.length - 1;
+    if (ultimo) {
+      this.terminar();
+      return;
+    }
+    // a intro espera a voz terminar de ler (até 8 s a mais)
+    if (this.passo.tipo === 'intro' && Voz.estaFalando() && this.tempo() < this.duracaoPasso + 8) return;
+    Som.sino();
+    this.irPara(this.indice + 1);
+  }
+};
+
+aoIniciar.push(() => {
+  $('btn-tocar').addEventListener('click', () => Sessao.alternar());
+  $('btn-anterior').addEventListener('click', () => Sessao.anterior());
+  $('btn-proximo').addEventListener('click', () => Sessao.proximo());
+  $('btn-forte').addEventListener('click', () => Aterrar.abrir());
+});
+
+/* ---------- 12. wake lock ---------- */
+
+const WakeLock = {
+  lock: null,
+  suportado: 'wakeLock' in navigator,
+
+  async pedir() {
+    if (!this.suportado || !Ajustes.dados.telaLigada || this.lock) return;
+    try {
+      this.lock = await navigator.wakeLock.request('screen');
+      this.lock.addEventListener('release', () => { this.lock = null; });
+    } catch (e) {
+      this.lock = null;
+    }
+  },
+
+  async soltar() {
+    if (!this.lock) return;
+    try { await this.lock.release(); } catch (e) { /* já estava solto */ }
+    this.lock = null;
+  }
+};
+
+aoIniciar.push(() => {
+  $('aj-tela-nota').hidden = WakeLock.suportado;
+  // o sistema solta o lock quando a tela apaga ou o app vai pro fundo; pede de novo ao voltar
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && Sessao.ativa) WakeLock.pedir();
+  });
+});
+
+Ajustes.aoMudar((chave, valor) => {
+  if (chave !== 'telaLigada') return;
+  if (valor && Sessao.ativa) WakeLock.pedir();
+  else if (!valor) WakeLock.soltar();
+});
 /* ---------- 13. arranque ---------- */
 
 function iniciarApp() {
