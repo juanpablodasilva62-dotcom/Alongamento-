@@ -341,6 +341,184 @@ const UIAjustes = {
     $('aviso-voz-ajustes').hidden = vozes.length > 0 || !Voz.disponivel();
   }
 };
+
+/* ---------- 6. som (Web Audio, sem arquivos) ---------- */
+
+const Som = {
+  ctx: null,
+  ganho: null,
+
+  // no iOS o AudioContext só nasce depois de um toque: chamar dentro de um clique
+  preparar() {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    if (!this.ctx) {
+      this.ctx = new AC();
+      this.ganho = this.ctx.createGain();
+      this.ganho.connect(this.ctx.destination);
+      this.ajustarVolume();
+    }
+    if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
+  },
+
+  ajustarVolume() {
+    if (this.ganho) this.ganho.gain.value = Ajustes.dados.volume;
+  },
+
+  pode() {
+    return !!this.ctx && Ajustes.dados.sons && Ajustes.dados.volume > 0;
+  },
+
+  nota(freq, inicio, duracao, tipo, volume) {
+    const o = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    o.type = tipo || 'sine';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, inicio);
+    g.gain.exponentialRampToValueAtTime(volume || 0.3, inicio + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, inicio + duracao);
+    o.connect(g);
+    g.connect(this.ganho);
+    o.start(inicio);
+    o.stop(inicio + duracao + 0.05);
+  },
+
+  // tique curto: 3 últimos segundos de cada exercício
+  tique() {
+    if (!this.pode()) return;
+    this.nota(1046.5, this.ctx.currentTime, 0.09, 'sine', 0.25);
+  },
+
+  // marca de repetição no modo "vezes"
+  marca() {
+    if (!this.pode()) return;
+    this.nota(659.3, this.ctx.currentTime, 0.16, 'triangle', 0.22);
+  },
+
+  // sino de duas notas: troca de exercício e troca de lado
+  sino() {
+    if (!this.pode()) return;
+    const t = this.ctx.currentTime;
+    this.nota(659.3, t, 1.4, 'triangle', 0.3);
+    this.nota(987.8, t + 0.24, 1.8, 'triangle', 0.24);
+  },
+
+  // acorde de quatro notas subindo: fim da rota
+  acorde() {
+    if (!this.pode()) return;
+    const t = this.ctx.currentTime;
+    [261.6, 329.6, 392.0, 493.9].forEach((f, i) => {
+      this.nota(f, t + i * 0.3, 3.2 - i * 0.3, 'sine', 0.26);
+    });
+  }
+};
+
+Ajustes.aoMudar((chave) => { if (chave === 'volume') Som.ajustarVolume(); });
+
+/* ---------- 7. voz (Web Speech, pt-BR) ---------- */
+
+const Voz = {
+  voz: null,
+  temPt: false,
+  pronta: false,
+  falaAtual: null, // { tipo: 'texto' | 'deixa', u }
+
+  disponivel() {
+    return 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+  },
+
+  iniciar() {
+    if (!this.disponivel()) {
+      UIAjustes.preencherVozes([]);
+      this.avisar();
+      return;
+    }
+    this.escolher();
+    speechSynthesis.addEventListener('voiceschanged', () => this.escolher());
+    // alguns Android só entregam a lista depois de um tempo
+    setTimeout(() => this.escolher(), 1500);
+  },
+
+  listar() {
+    if (!this.disponivel()) return [];
+    return speechSynthesis.getVoices().filter((v) => /^pt([-_]|$)/i.test(v.lang));
+  },
+
+  escolher() {
+    const vozes = this.listar();
+    this.temPt = vozes.length > 0;
+    const nome = Ajustes.dados.vozNome;
+    this.voz = vozes.find((v) => v.name === nome)
+      || vozes.find((v) => /br/i.test(v.lang) && /natural|neural|online|google|luciana|francisca/i.test(v.name))
+      || vozes.find((v) => /br/i.test(v.lang))
+      || vozes[0]
+      || null;
+    UIAjustes.preencherVozes(vozes);
+    this.avisar();
+  },
+
+  // aviso na sessão quando a voz está ligada mas não há voz em português
+  avisar() {
+    $('aviso-voz').hidden = !(Ajustes.dados.voz && !this.temPt);
+  },
+
+  // no iOS a primeira fala precisa nascer dentro de um toque
+  preparar() {
+    if (!this.disponivel() || this.pronta) return;
+    try {
+      const u = new SpeechSynthesisUtterance(' ');
+      u.volume = 0;
+      speechSynthesis.speak(u);
+      this.pronta = true;
+    } catch (e) { /* segue sem voz */ }
+  },
+
+  estaFalando() {
+    return this.disponivel() && (speechSynthesis.speaking || speechSynthesis.pending);
+  },
+
+  falar(texto, opcoes) {
+    opcoes = opcoes || {};
+    if (!this.disponivel() || !texto) return;
+    if (!Ajustes.dados.voz && !opcoes.forcar) return;
+    if (!this.temPt) this.escolher();
+    if (!this.temPt) return;
+
+    const u = new SpeechSynthesisUtterance(texto);
+    u.lang = (this.voz && this.voz.lang) || 'pt-BR';
+    if (this.voz) u.voice = this.voz;
+    u.rate = Ajustes.dados.velocidadeVoz;
+    u.pitch = 0.95;
+    u.volume = Ajustes.dados.volume;
+    const registro = { tipo: opcoes.tipo || 'texto', u };
+    u.onend = u.onerror = () => { if (this.falaAtual === registro) this.falaAtual = null; };
+    this.falaAtual = registro;
+
+    // o Chrome do Android às vezes engole um speak() logo depois de um cancel()
+    const estavaFalando = this.estaFalando();
+    speechSynthesis.cancel();
+    if (estavaFalando) {
+      setTimeout(() => { if (this.falaAtual === registro) speechSynthesis.speak(u); }, 60);
+    } else {
+      speechSynthesis.speak(u);
+    }
+  },
+
+  // deixa curta ("entra", "solta", "espera"): não corta um texto longo no meio
+  deixa(texto) {
+    if (this.falaAtual && this.falaAtual.tipo === 'texto' && this.estaFalando()) return;
+    this.falar(texto, { tipo: 'deixa' });
+  },
+
+  silenciar() {
+    if (!this.disponivel()) return;
+    this.falaAtual = null;
+    speechSynthesis.cancel();
+  }
+};
+
+aoIniciar.push(() => Voz.iniciar());
+Ajustes.aoMudar((chave) => { if (chave === 'voz' || chave === 'vozNome') Voz.escolher(); });
 /* ---------- 13. arranque ---------- */
 
 function iniciarApp() {
