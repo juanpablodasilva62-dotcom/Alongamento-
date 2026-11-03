@@ -210,7 +210,10 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 
 .rota-um {
   cursor: default;
-  padding-bottom: 8px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding-bottom: 10px;
   min-height: 0;
 }
 
