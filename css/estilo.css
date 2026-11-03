@@ -810,11 +810,20 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 /* ---------- telas pequenas e baixas ---------- */
 
 @media (max-height: 640px) {
-  .exercicio-nome { font-size: 26px; }
-  .guia { --tam: min(56vw, 34vh, 240px); }
-  .contador-numero { font-size: 34px; }
-  .como { font-size: 15.5px; min-height: 0; }
-  .sessao-centro { gap: 8px; }
+  .tela-sessao { padding-top: calc(10px + var(--safe-top)); }
+  .barra-rota { margin-bottom: 10px; }
+  .exercicio-nome { font-size: 24px; }
+  .guia { --tam: min(50vw, 29vh, 210px); margin: 2px 0; }
+  .contador { min-height: 36px; }
+  .contador-numero { font-size: 32px; }
+  .deixa { font-size: 15px; }
+  .como { font-size: 15px; min-height: 0; }
+  .respiracao { font-size: 13.5px; }
+  .aviso { font-size: 13px; }
+  .sessao-centro { gap: 6px; padding: 2px 0; }
+  .sessao-texto { padding: 2px 0 8px; gap: 3px; }
+  .sessao-controles { padding-top: 6px; }
+  .btn-forte { min-height: 40px; }
 }
 
 @media (min-width: 560px) {
