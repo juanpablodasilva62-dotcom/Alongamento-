@@ -5,8 +5,10 @@
    código), troca o número da VERSAO pra forçar a atualização.
    ========================================================= */
 
-const VERSAO = 'alongamento-v1';
+const VERSAO = 'alongamento-v2';
 const FONTES = 'alongamento-fontes';
+// áudios num cache à parte: não somem quando a VERSAO muda (são ~7 MB)
+const AUDIO = 'alongamento-audio-v1';
 
 const ARQUIVOS = [
   './',
@@ -14,6 +16,10 @@ const ARQUIVOS = [
   './css/estilo.css',
   './js/rotina.js',
   './js/app.js',
+  './js/falas.js',
+  './js/checkin.js',
+  './js/inicio.js',
+  './audio/falas.json',
   './manifest.webmanifest',
   './img/icone.svg',
   './img/icone-180.png',
@@ -73,7 +79,7 @@ self.addEventListener('activate', (evento) => {
   evento.waitUntil(
     caches.keys()
       .then((chaves) => Promise.all(
-        chaves.filter((c) => c !== VERSAO && c !== FONTES).map((c) => caches.delete(c))
+        chaves.filter((c) => c !== VERSAO && c !== FONTES && c !== AUDIO).map((c) => caches.delete(c))
       ))
       .then(() => self.clients.claim())
   );
@@ -83,6 +89,20 @@ self.addEventListener('fetch', (evento) => {
   const pedido = evento.request;
   if (pedido.method !== 'GET') return;
   const url = new URL(pedido.url);
+
+  // áudios gravados: guarda cada um na primeira vez que toca
+  if (url.origin === self.location.origin && /\/audio\/[^/]+\.mp3$/.test(url.pathname)) {
+    evento.respondWith(
+      caches.open(AUDIO).then(async (cache) => {
+        const guardado = await cache.match(url.href);
+        if (guardado) return guardado;
+        const resposta = await fetch(url.href);
+        if (resposta.ok) cache.put(url.href, resposta.clone());
+        return resposta;
+      }).catch(() => Response.error())
+    );
+    return;
+  }
 
   // arquivos do app: cache primeiro, rede como reserva, index.html pra navegação offline
   if (url.origin === self.location.origin) {
