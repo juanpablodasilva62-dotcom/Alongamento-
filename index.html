@@ -78,21 +78,20 @@
     <div class="sessao-centro">
       <h1 class="exercicio-nome" id="sessao-exercicio"></h1>
 
-      <div class="guia" id="guia">
-        <svg class="anel" viewBox="0 0 200 200" aria-hidden="true">
-          <circle class="anel-fundo" cx="100" cy="100" r="98"></circle>
-          <circle class="anel-cheio" id="anel-cheio" cx="100" cy="100" r="98"></circle>
-        </svg>
-        <div class="guia-forma" id="guia-forma"></div>
-        <div class="ilustracao" id="ilustracao" aria-hidden="true"></div>
-        <div class="ponto-ocular" id="ponto-ocular" hidden></div>
+      <!-- a ilustração num card; o anel em volta é o guia de respiração -->
+      <div class="guia guia-card" id="guia">
+        <div class="anel-resp" id="anel-resp" aria-hidden="true"></div>
+        <button type="button" class="card" id="card" aria-label="ver a imagem em tela cheia">
+          <span class="ilustracao" id="ilustracao" aria-hidden="true"></span>
+          <span class="ponto-ocular" id="ponto-ocular" hidden></span>
+        </button>
       </div>
+      <p class="deixa deixa-fase" id="deixa"></p>
 
       <p class="contador" id="contador" aria-live="off">
         <span class="contador-numero" id="contador-numero"></span>
         <span class="contador-rotulo" id="contador-rotulo"></span>
       </p>
-      <p class="deixa" id="deixa"></p>
     </div>
 
     <div class="sessao-texto">
@@ -146,6 +145,11 @@
   </section>
 
 </main>
+
+<!-- imagem em tela cheia: um toque abre, outro fecha -->
+<div class="tela-cheia" id="tela-cheia" hidden role="dialog" aria-label="imagem do exercício">
+  <div class="tela-cheia-img" id="tela-cheia-img"></div>
+</div>
 
 <!-- Folha de ajustes -->
 <div class="folha-fundo" id="folha-fundo"></div>

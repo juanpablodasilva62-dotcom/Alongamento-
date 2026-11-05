@@ -622,55 +622,106 @@ Ajustes.aoMudar((chave) => { if (chave === 'modoVoz' || chave === 'vozNome') Voz
 
 const DEIXAS = { entra: 'entra', sai: 'solta', pausa: 'espera' };
 
+// o anel em volta do card: cresce no "entra", encolhe no "solta", para na "espera".
+// s vem do Motor, de 0,62 (vazio) a 1 (cheio)
 const Guia = {
-  circunferencia: 2 * Math.PI * 98,
   ultimaEscala: -1,
-  ultimoAnel: -1,
+  crescimento: 0.07, // quanto o anel cresce além do card no fim do "entra"
 
   escala(s) {
     if (Math.abs(s - this.ultimaEscala) < 0.0005) return;
     this.ultimaEscala = s;
-    $('guia-forma').style.transform = `scale(${s.toFixed(4)})`;
+    const anel = 1 + this.crescimento * limitar((s - 0.62) / 0.38, 0, 1);
+    $('anel-resp').style.transform = `scale(${anel.toFixed(4)})`;
   },
 
   zerar() {
     this.ultimaEscala = -1;
-    this.ultimoAnel = -1;
   }
 };
 
+// img/<id>.webp se existir; se não, o img/<id>.svg de antes (com a cor do segmento)
 const Ilustracao = {
-  cache: new Map(),
+  svgs: new Map(),   // id -> texto do svg
+  webps: new Map(),  // id -> Promise<bool>: o .webp existe?
   pedido: 0,
 
-  // injeta o SVG inline pra cor do segmento valer no traço
+  // carregar a imagem já testa se ela existe e deixa ela pronta pra aparecer
+  temWebp(id) {
+    if (!this.webps.has(id)) {
+      this.webps.set(id, new Promise((resolver) => {
+        const img = new Image();
+        img.onload = () => resolver(img.naturalWidth > 0);
+        img.onerror = () => { this.webps.delete(id); resolver(false); }; // tenta de novo na próxima vez
+        img.src = `img/${encodeURIComponent(id)}.webp`;
+      }));
+    }
+    return this.webps.get(id);
+  },
+
+  async svg(id) {
+    if (!this.svgs.has(id)) {
+      let texto = '';
+      try {
+        const resposta = await fetch(`img/${encodeURIComponent(id)}.svg`);
+        texto = resposta.ok ? await resposta.text() : '';
+      } catch (e) { texto = ''; }
+      this.svgs.set(id, texto);
+    }
+    return this.svgs.get(id);
+  },
+
   async mostrar(id) {
     const el = $('ilustracao');
     const meuPedido = ++this.pedido;
     el.hidden = false;
-    let svg = this.cache.get(id);
-    if (svg === undefined) {
-      try {
-        const resposta = await fetch(`img/${encodeURIComponent(id)}.svg`);
-        svg = resposta.ok ? await resposta.text() : '';
-      } catch (e) {
-        svg = '';
-      }
-      this.cache.set(id, svg);
-    }
+    const webp = await this.temWebp(id);
     if (meuPedido !== this.pedido) return; // já trocou de exercício
+    if (webp) {
+      el.className = 'ilustracao foto';
+      el.innerHTML = `<img src="img/${encodeURIComponent(id)}.webp" alt="" decoding="async">`;
+      return;
+    }
+    const svg = await this.svg(id);
+    if (meuPedido !== this.pedido) return;
+    el.className = 'ilustracao traco';
     el.innerHTML = svg;
   },
 
-  preparar() { /* pré-carregamento de imagem: chega com as imagens novas */ },
+  preparar(id) {
+    this.temWebp(id).then((webp) => { if (!webp) this.svg(id); });
+  },
 
   esconder() {
     this.pedido++;
     const el = $('ilustracao');
     el.hidden = true;
     el.innerHTML = '';
+    TelaCheia.fechar();
   }
 };
+
+const TelaCheia = {
+  abrir() {
+    const origem = $('ilustracao');
+    if (origem.hidden || !origem.innerHTML) return;
+    const destino = $('tela-cheia-img');
+    destino.className = `tela-cheia-img ${origem.classList.contains('traco') ? 'traco' : 'foto'}`;
+    destino.innerHTML = origem.innerHTML;
+    $('tela-cheia').style.setProperty('--cor-seg', getComputedStyle($('tela-sessao')).getPropertyValue('--cor-seg'));
+    $('tela-cheia').hidden = false;
+  },
+
+  fechar() {
+    $('tela-cheia').hidden = true;
+    $('tela-cheia-img').innerHTML = '';
+  }
+};
+
+aoIniciar.push(() => {
+  $('card').addEventListener('click', () => TelaCheia.abrir());
+  $('tela-cheia').addEventListener('click', () => TelaCheia.fechar());
+});
 
 const Ponto = {
   // posição relativa ao tamanho do guia: metade do tempo em círculos,
@@ -693,12 +744,14 @@ const Ponto = {
   },
 
   aplicar(pos) {
-    const tam = $('guia').clientWidth;
+    const tam = $('card').clientWidth;
     $('ponto-ocular').style.transform = `translate(${(pos.x * tam).toFixed(1)}px, ${(pos.y * tam).toFixed(1)}px)`;
   },
 
+  // com o ponto andando, a imagem fica apagadinha atrás
   mostrar(sim) {
     $('ponto-ocular').hidden = !sim;
+    $('guia').classList.toggle('com-ponto', sim);
   }
 };
 
@@ -755,7 +808,7 @@ const Motor = {
     const tLado = t - (lado - 1) * c.valor;
     const faltam = Math.max(0, Math.ceil(c.valor - tLado));
     const estado = {
-      escala: 0.8, anel: tLado / c.valor, numero: faltam, rotulo: faltam === 1 ? 'segundo' : 'segundos',
+      escala: 0.62, anel: tLado / c.valor, numero: faltam, rotulo: faltam === 1 ? 'segundo' : 'segundos',
       deixa: c.cadaLado ? (lado === 1 ? 'primeiro lado' : 'outro lado') : '',
       lado, restante: total - t, fim: t >= total
     };
