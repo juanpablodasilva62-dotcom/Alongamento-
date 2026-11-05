@@ -925,8 +925,8 @@ button:focus-visible, input:focus-visible, select:focus-visible {
   .barra-rota { margin-bottom: 10px; }
   .exercicio-nome { font-size: 24px; }
   .guia-card {
-    --tam: clamp(150px, min(76vw, 100vh - 440px), 340px);
-    --tam: clamp(150px, min(76vw, 100dvh - 440px), 340px);
+    --tam: clamp(150px, min(76vw, 100vh - 446px), 340px);
+    --tam: clamp(150px, min(76vw, 100dvh - 446px), 340px);
     margin: 18px 0 16px;
   }
   .deixa.deixa-fase { font-size: 19px; }
