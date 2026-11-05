@@ -5,7 +5,7 @@
    código), troca o número da VERSAO pra forçar a atualização.
    ========================================================= */
 
-const VERSAO = 'alongamento-v2';
+const VERSAO = 'alongamento-v3';
 const FONTES = 'alongamento-fontes';
 // áudios num cache à parte: não somem quando a VERSAO muda (são ~7 MB)
 const AUDIO = 'alongamento-audio-v1';

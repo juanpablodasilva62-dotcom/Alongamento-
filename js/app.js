@@ -156,6 +156,8 @@ const Rota = {
       R.segmentos.forEach((s) => { passos = passos.concat(this.passosDoSegmento(s, true)); });
       passos = passos.concat(this.passosDoSegmento(R.ficar, false));
     } else if (tipo === 'curta') {
+      // começa mandando deitar, como a intro de um segmento
+      if (Falas.tem('chegar-intro')) passos.push(this.passoFala(R.chegar, 'chegar-intro', R.chegar.nome, R.chegar.intro));
       R.rotaCurta.forEach((item) => {
         const seg = this.segmentoPorId(item.segmento);
         const ex = seg && seg.exercicios.find((e) => e.id === item.exercicio);

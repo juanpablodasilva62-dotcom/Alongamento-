@@ -81,9 +81,11 @@ const Fluxo = {
       antes: null,
       depois: null
     };
-    if (tipo === 'completa') {
-      const minutos = Math.max(1, Math.round(Rota.montar('completa').duracao / 60));
-      $('antes-texto').textContent = 'Você vai precisar de um tapete ou colchonete, uma toalha enrolada, ' +
+    if (tipo === 'completa' || tipo === 'curta') {
+      // a toalha só entra na Completa (é usada no Torácico)
+      const minutos = Math.max(1, Math.round(Rota.montar(tipo).duracao / 60));
+      const toalha = tipo === 'completa' ? 'uma toalha enrolada, ' : '';
+      $('antes-texto').textContent = `Você vai precisar de um tapete ou colchonete, ${toalha}` +
         `uns ${minutos} minutos e o celular apoiado onde dê pra ver deitado.`;
       Telas.mostrar('tela-antes');
     } else {

@@ -16,7 +16,7 @@ Na primeira vez aparece a tela "Sinais normais", que não volta mais. Dá pra re
 ## Telas
 
 - **Início:** três rotas (Completa, Curta, Um segmento) e a lista dos sete segmentos. A duração mostrada é calculada a partir dos dados da rotina e do ritmo de respiração escolhido nos Ajustes.
-- **Antes de começar:** só na Completa: o que vai precisar e quanto tempo leva (a mesma duração da tela inicial).
+- **Antes de começar:** na Completa e na Curta: o que vai precisar e quanto tempo leva (a mesma duração da tela inicial). A toalha só aparece na Completa.
 - **Check-in:** "Quão tenso você tá agora?", de 0 a 10, antes de qualquer rota e depois do Ficar. Depois mostra "antes 7 → agora 3". Fica guardado no aparelho; os 5 últimos aparecem discretos no início.
 - **Sessão:** nome e cor do segmento, nome do exercício, a ilustração num card branco com o anel de respiração em volta (cresce no entra, encolhe no solta, para na espera), a palavra da fase embaixo, o contador, o "como", a legenda da fala e os controles. Tocar na imagem abre em tela cheia. "Ficou forte" fica sempre visível.
 - **Feedback:** opcional, depois do check-in final. Doze perguntas curtas e uma tela com o resumo, pra mandar pelo WhatsApp ou copiar. Nada é enviado sozinho.
@@ -24,7 +24,7 @@ Na primeira vez aparece a tela "Sinais normais", que não volta mais. Dá pra re
 - **Ficar:** a tela escurece aos poucos, sem contador. Um toque acende e mostra "continuar" ou "encerrar". No fim da rota toca um acorde e aparece "Pronto".
 - **Ajustes:** folha que sobe de baixo. Ritmo da respiração, voz, sons, tela ligada e velocidade do ponto ocular. Tudo fica salvo no aparelho.
 
-No modo **Um segmento** o app roda Chegar antes e Ficar depois, sempre. Se escolher Pélvico, roda o Diafragmático antes. A intro e o fim de cada segmento só aparecem na Completa e no Um segmento; na Curta só tocam o áudio de cada exercício e as deixas.
+No modo **Um segmento** o app roda Chegar antes e Ficar depois, sempre. Se escolher Pélvico, roda o Diafragmático antes. A intro e o fim de cada segmento só aparecem na Completa e no Um segmento; na Curta, a fala `chegar-intro` ("Deita de costas…") abre a rota e depois só tocam o áudio de cada exercício e as deixas.
 
 ## Voz gravada
 
