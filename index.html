@@ -28,6 +28,7 @@
       <p class="rotulo">Antes de começar</p>
       <h1 class="titulo-grande">Sinais normais</h1>
       <p class="texto-grande" id="texto-sinais"></p>
+      <button type="button" class="btn btn-texto btn-ouvir" id="btn-ouvir-sinais">Ouvir</button>
     </div>
     <footer class="tela-pe">
       <button type="button" class="btn btn-contorno btn-largo" id="btn-entendi">entendi</button>
@@ -96,6 +97,7 @@
 
     <div class="sessao-texto">
       <p class="como" id="sessao-como"></p>
+      <p class="legenda" aria-live="off"></p>
       <p class="respiracao" id="sessao-respiracao"></p>
       <p class="aviso" id="aviso-voz" hidden>Sem voz em português neste aparelho. Seguindo só em texto.</p>
     </div>
@@ -116,6 +118,7 @@
       <p class="rotulo">Aterrar</p>
       <h1 class="titulo-grande">Ficou forte. Tudo bem.</h1>
       <p class="texto-grande">Abre os olhos, olha o quarto, apoia os pés no chão, solta o ar devagar.</p>
+      <p class="legenda" aria-live="off"></p>
       <div class="guia guia-aterrar" id="guia-aterrar">
         <div class="guia-forma" id="aterrar-forma"></div>
       </div>
@@ -133,6 +136,7 @@
       <p class="rotulo">Ficar</p>
       <h1 class="titulo-grande" id="ficar-titulo">Ficar</h1>
       <p class="texto-grande" id="ficar-texto"></p>
+      <p class="legenda" aria-live="off"></p>
     </div>
     <footer class="tela-pe acoes ficar-acoes" id="ficar-acoes" hidden>
       <button type="button" class="btn btn-texto btn-claro" id="btn-ficar-continuar">continuar</button>
@@ -180,21 +184,37 @@
 
   <section class="ajuste-grupo">
     <h3 class="ajuste-grupo-titulo">Voz</h3>
-    <label class="ajuste-linha">
-      <span class="ajuste-rotulo">voz ligada</span>
-      <input type="checkbox" class="chave" id="aj-voz">
-    </label>
+    <div class="ajuste-linha ajuste-coluna">
+      <div class="opcoes opcoes-voz" role="radiogroup" aria-label="voz">
+        <label class="opcao"><input type="radio" name="modoVoz" value="gravada"><span>Voz gravada</span></label>
+        <label class="opcao"><input type="radio" name="modoVoz" value="aparelho"><span>Voz do aparelho</span></label>
+        <label class="opcao"><input type="radio" name="modoVoz" value="nenhuma"><span>Sem voz</span></label>
+      </div>
+    </div>
     <label class="ajuste-linha ajuste-coluna">
-      <span class="ajuste-rotulo">qual voz</span>
-      <select class="seletor" id="aj-voz-nome"></select>
+      <span class="ajuste-rotulo">volume da voz <span class="ajuste-valor" id="aj-volume-voz-valor"></span></span>
+      <input type="range" class="faixa" id="aj-volume-voz" min="0" max="1" step="0.05">
     </label>
-    <label class="ajuste-linha ajuste-coluna">
-      <span class="ajuste-rotulo">velocidade <span class="ajuste-valor" id="aj-velocidade-voz-valor"></span></span>
-      <input type="range" class="faixa" id="aj-velocidade-voz" min="0.7" max="1.3" step="0.05">
-    </label>
-    <div class="ajuste-linha">
+    <p class="ajuste-nota" id="aj-volume-voz-nota" hidden>Neste aparelho o volume da voz segue os botões de volume.</p>
+    <div id="aj-voz-aparelho" hidden>
+      <label class="ajuste-linha ajuste-coluna">
+        <span class="ajuste-rotulo">qual voz</span>
+        <select class="seletor" id="aj-voz-nome"></select>
+      </label>
+      <label class="ajuste-linha ajuste-coluna">
+        <span class="ajuste-rotulo">velocidade <span class="ajuste-valor" id="aj-velocidade-voz-valor"></span></span>
+        <input type="range" class="faixa" id="aj-velocidade-voz" min="0.7" max="1.3" step="0.05">
+      </label>
       <p class="aviso" id="aviso-voz-ajustes" hidden>Sem voz em português neste aparelho.</p>
+    </div>
+    <div class="ajuste-linha">
+      <span class="ajuste-nota">Se um áudio gravado faltar, a voz do aparelho lê o mesmo texto.</span>
       <button type="button" class="btn btn-texto" id="aj-testar-voz">ouvir</button>
+    </div>
+    <div class="ajuste-baixar" id="aj-baixar-linha" hidden>
+      <button type="button" class="btn btn-contorno btn-largo" id="aj-baixar">Baixar todos os áudios</button>
+      <div class="progresso" aria-hidden="true"><div class="progresso-cheio" id="aj-baixar-barra"></div></div>
+      <p class="ajuste-nota" id="aj-baixar-nota"></p>
     </div>
   </section>
 
@@ -239,5 +259,8 @@
 
 <script src="js/rotina.js"></script>
 <script src="js/app.js"></script>
+<script src="js/falas.js"></script>
+<script src="js/checkin.js"></script>
+<script src="js/inicio.js"></script>
 </body>
 </html>

@@ -48,14 +48,22 @@ function ler(chave) {
 const CHAVE_AJUSTES = 'alongamento.ajustes';
 const CHAVE_SINAIS = 'alongamento.sinaisVistos';
 
+const MODOS_VOZ = ['gravada', 'aparelho', 'nenhuma'];
+
 const Ajustes = {
-  dados: Object.assign({}, R.ajustesPadrao),
+  // modoVoz e volumeVoz chegaram com a voz gravada; o resto vem de rotina.js
+  dados: Object.assign({ modoVoz: 'gravada', volumeVoz: 1 }, R.ajustesPadrao),
   ouvintes: [],
 
   carregar() {
     const salvo = ler(CHAVE_AJUSTES);
     if (salvo) {
-      try { Object.assign(this.dados, JSON.parse(salvo)); } catch (e) { /* ignora ajuste corrompido */ }
+      try {
+        const lido = JSON.parse(salvo);
+        // quem tinha desligado a voz antes da voz gravada continua sem voz
+        if (lido && !('modoVoz' in lido) && lido.voz === false) lido.modoVoz = 'nenhuma';
+        Object.assign(this.dados, lido);
+      } catch (e) { /* ignora ajuste corrompido */ }
     }
     this.normalizar();
   },
@@ -70,7 +78,10 @@ const Ajustes = {
     d.velocidadeVoz = limitar(Number(d.velocidadeVoz) || 0.95, 0.7, 1.3);
     d.volume = limitar(Number(d.volume), 0, 1);
     if (Number.isNaN(d.volume)) d.volume = 0.6;
-    d.voz = !!d.voz;
+    if (!MODOS_VOZ.includes(d.modoVoz)) d.modoVoz = 'gravada';
+    d.voz = d.modoVoz !== 'nenhuma';
+    d.volumeVoz = limitar(Number(d.volumeVoz), 0, 1);
+    if (Number.isNaN(d.volumeVoz)) d.volumeVoz = 1;
     d.sons = !!d.sons;
     d.telaLigada = !!d.telaLigada;
     if (!R.pontoOcular[d.velocidadePonto]) d.velocidadePonto = 'medio';
@@ -116,22 +127,32 @@ const Rota = {
     return { tipo: 'exercicio', segmento, exercicio, contagem: contagem || exercicio.contagem };
   },
 
-  passoIntro(segmento) {
-    return { tipo: 'intro', segmento, duracao: R.duracaoIntro };
+  /* passo só de fala: abertura, intro e fim de segmento.
+     falaId: id em falas.json (pode faltar); como: texto da rotina pra tela */
+  passoFala(segmento, falaId, titulo, como) {
+    return { tipo: 'fala', segmento, falaId: Falas.tem(falaId) ? falaId : null, titulo, como: como || '' };
   },
 
-  // comIntro: só na Completa e no Um segmento
-  passosDoSegmento(segmento, comIntro) {
+  // comFalas: intro e fim do segmento, só na Completa e no Um segmento
+  passosDoSegmento(segmento, comFalas) {
     const passos = [];
-    if (comIntro && segmento.intro) passos.push(this.passoIntro(segmento));
+    if (comFalas && (segmento.intro || Falas.tem(`${segmento.id}-intro`))) {
+      passos.push(this.passoFala(segmento, `${segmento.id}-intro`, segmento.nome, segmento.intro));
+    }
     segmento.exercicios.forEach((ex) => passos.push(this.passoExercicio(segmento, ex)));
+    if (comFalas && Falas.tem(`${segmento.id}-fim`)) {
+      passos.push(this.passoFala(segmento, `${segmento.id}-fim`, segmento.nome, ''));
+    }
     return passos;
   },
 
   montar(tipo, segmentoId) {
     let passos = [];
     if (tipo === 'completa') {
-      passos = passos.concat(this.passosDoSegmento(R.chegar, false));
+      if (Falas.tem('abertura')) {
+        passos.push(this.passoFala({ id: 'abertura', nome: 'Abertura', partes: '', cor: R.chegar.cor }, 'abertura', 'Abertura', ''));
+      }
+      passos = passos.concat(this.passosDoSegmento(R.chegar, true));
       R.segmentos.forEach((s) => { passos = passos.concat(this.passosDoSegmento(s, true)); });
       passos = passos.concat(this.passosDoSegmento(R.ficar, false));
     } else if (tipo === 'curta') {
@@ -142,7 +163,7 @@ const Rota = {
       });
     } else if (tipo === 'segmento') {
       const seg = this.segmentoPorId(segmentoId);
-      passos = passos.concat(this.passosDoSegmento(R.chegar, false));
+      passos = passos.concat(this.passosDoSegmento(R.chegar, true));
       if (seg.id === 'pelvico') {
         passos = passos.concat(this.passosDoSegmento(this.segmentoPorId('diafragmatico'), true));
       }
@@ -153,15 +174,31 @@ const Rota = {
     return { tipo, segmentoId: segmentoId || null, passos, duracao };
   },
 
-  // duração de um passo em segundos, com o ritmo de respiração atual
-  duracaoPasso(passo) {
-    if (passo.tipo === 'intro') return passo.duracao;
+  // fala de um passo de fala: o áudio + 1 s; sem áudio, a duração antiga da intro
+  duracaoFala(passo) {
+    return passo.falaId ? Falas.duracao(passo.falaId) + 1 : R.duracaoIntro;
+  },
+
+  // áudio do exercício, que toca antes do contador (não conta em "sem voz")
+  duracaoAudioExercicio(passo) {
+    if (Ajustes.dados.modoVoz === 'nenhuma') return 0;
+    return Falas.duracao(passo.exercicio.id);
+  },
+
+  // só a contagem do exercício, sem o áudio
+  duracaoContagem(passo) {
     const c = passo.contagem;
     const a = Ajustes.dados;
     if (c.tipo === 'respiracoes') return c.valor * (a.entra + a.sai + a.pausa);
     if (c.tipo === 'vezes') return c.valor * (c.intervalo || R.intervaloVezPadrao);
     if (c.tipo === 'segundos') return c.valor * (c.cadaLado ? 2 : 1);
     return 0;
+  },
+
+  // duração de um passo em segundos, com o ritmo de respiração atual
+  duracaoPasso(passo) {
+    if (passo.tipo === 'fala') return this.duracaoFala(passo);
+    return this.duracaoAudioExercicio(passo) + this.duracaoContagem(passo);
   }
 };
 
@@ -197,17 +234,24 @@ const UIInicio = {
       duracao.dataset.duracaoSegmento = seg.id;
 
       botao.append(ponto, texto, duracao);
-      botao.addEventListener('click', () => Sessao.iniciar('segmento', seg.id));
+      botao.addEventListener('click', () => Fluxo.iniciarRota('segmento', seg.id));
       li.appendChild(botao);
       lista.appendChild(li);
     });
 
     document.querySelectorAll('.rota[data-rota]').forEach((botao) => {
-      botao.addEventListener('click', () => Sessao.iniciar(botao.dataset.rota));
+      botao.addEventListener('click', () => Fluxo.iniciarRota(botao.dataset.rota));
     });
 
     $('btn-ajustes').addEventListener('click', () => UIAjustes.abrir());
+    $('btn-ouvir-sinais').addEventListener('click', () => {
+      Som.preparar();
+      Voz.preparar();
+      Fala.destravar();
+      Fala.tocar('sinais-normais', { forcar: true, legenda: false, texto: Falas.texto('sinais-normais') || R.sinaisNormais });
+    });
     $('btn-entendi').addEventListener('click', () => {
+      Fala.parar();
       guardar(CHAVE_SINAIS, '1');
       Telas.mostrar('tela-inicio');
     });
@@ -243,7 +287,17 @@ const UIAjustes = {
       });
     });
 
-    $('aj-voz').addEventListener('change', (e) => Ajustes.definir('voz', e.target.checked));
+    folha.querySelectorAll('input[name="modoVoz"]').forEach((radio) => {
+      radio.addEventListener('change', () => {
+        if (!radio.checked) return;
+        Ajustes.definir('modoVoz', radio.value);
+        this.refletir();
+      });
+    });
+    $('aj-volume-voz').addEventListener('input', (e) => {
+      Ajustes.definir('volumeVoz', Number(e.target.value));
+      this.refletirValores();
+    });
     $('aj-voz-nome').addEventListener('change', (e) => Ajustes.definir('vozNome', e.target.value));
     $('aj-velocidade-voz').addEventListener('input', (e) => {
       Ajustes.definir('velocidadeVoz', Number(e.target.value));
@@ -252,8 +306,10 @@ const UIAjustes = {
     $('aj-testar-voz').addEventListener('click', () => {
       Som.preparar();
       Voz.preparar();
-      Voz.falar('Entra. Solta. Espera.', { tipo: 'texto', forcar: true });
+      Fala.destravar();
+      Fala.tocar('solta-3', { forcar: true, texto: Falas.texto('solta-3') || 'Solta tudo.' });
     });
+    $('aj-baixar').addEventListener('click', () => this.baixarAudios());
 
     $('aj-sons').addEventListener('change', (e) => {
       Ajustes.definir('sons', e.target.checked);
@@ -283,6 +339,7 @@ const UIAjustes = {
 
   abrir() {
     this.refletir();
+    this.estadoBaixar();
     $('folha-ajustes').classList.add('aberta');
     $('folha-ajustes').setAttribute('aria-hidden', 'false');
     $('folha-fundo').classList.add('aberta');
@@ -302,7 +359,12 @@ const UIAjustes = {
     $('aj-entra').textContent = `${d.entra} s`;
     $('aj-sai').textContent = `${d.sai} s`;
     $('aj-pausa').textContent = `${d.pausa} s`;
-    $('aj-voz').checked = d.voz;
+    const modo = document.querySelector(`input[name="modoVoz"][value="${d.modoVoz}"]`);
+    if (modo) modo.checked = true;
+    $('aj-volume-voz').value = d.volumeVoz;
+    $('aj-voz-aparelho').hidden = d.modoVoz !== 'aparelho';
+    $('aj-volume-voz-nota').hidden = !Fala.volumeFixo;
+    Voz.avisar();
     $('aj-velocidade-voz').value = d.velocidadeVoz;
     $('aj-sons').checked = d.sons;
     $('aj-volume').value = d.volume;
@@ -318,8 +380,43 @@ const UIAjustes = {
     const d = Ajustes.dados;
     $('aj-velocidade-voz-valor').textContent = `${d.velocidadeVoz.toFixed(2).replace('.', ',')}×`;
     $('aj-volume-valor').textContent = `${Math.round(d.volume * 100)}%`;
+    $('aj-volume-voz-valor').textContent = `${Math.round(d.volumeVoz * 100)}%`;
     const ciclo = d.entra + d.sai + d.pausa;
     $('aj-ritmo-nota').textContent = `Uma respiração dura ${ciclo} s.`;
+  },
+
+  // botão "Baixar todos os áudios": quantos já estão no aparelho e o tamanho
+  async estadoBaixar() {
+    const linha = $('aj-baixar-linha');
+    if (!Baixar.disponivel() || !Falas.carregado) { linha.hidden = true; return; }
+    linha.hidden = false;
+    if (Baixar.rodando) return;
+    const total = Baixar.ids().length;
+    const [feitos, tamanho] = await Promise.all([Baixar.guardados(), Baixar.medir()]);
+    if (Baixar.rodando) return;
+    const tam = tamanho ? ` (${formatarMB(tamanho)})` : '';
+    $('aj-baixar-barra').style.width = `${(feitos / total) * 100}%`;
+    if (feitos >= total) {
+      $('aj-baixar').textContent = 'Áudios baixados';
+      $('aj-baixar').disabled = true;
+      $('aj-baixar-nota').textContent = `Todos os ${total} áudios estão no aparelho${tam}. Funciona sem internet.`;
+    } else {
+      $('aj-baixar').textContent = `Baixar todos os áudios${tam}`;
+      $('aj-baixar').disabled = false;
+      $('aj-baixar-nota').textContent = feitos
+        ? `${feitos} de ${total} já estão no aparelho.`
+        : 'Pra usar a voz gravada sem internet. Cada áudio também fica guardado na primeira vez que toca.';
+    }
+  },
+
+  async baixarAudios() {
+    $('aj-baixar').disabled = true;
+    const ok = await Baixar.tudo((feitos, total) => {
+      $('aj-baixar').textContent = `Baixando ${feitos} de ${total}…`;
+      $('aj-baixar-barra').style.width = `${(feitos / total) * 100}%`;
+    });
+    await this.estadoBaixar();
+    if (!ok) $('aj-baixar-nota').textContent = 'Alguns áudios não baixaram. Confere a internet e tenta de novo.';
   },
 
   // chamada pela Voz quando a lista de vozes muda
@@ -338,7 +435,6 @@ const UIAjustes = {
     });
     seletor.disabled = vozes.length === 0;
     seletor.value = vozes.some((v) => v.name === Ajustes.dados.vozNome) ? Ajustes.dados.vozNome : '';
-    $('aviso-voz-ajustes').hidden = vozes.length > 0 || !Voz.disponivel();
   }
 };
 
@@ -457,9 +553,11 @@ const Voz = {
     this.avisar();
   },
 
-  // aviso na sessão quando a voz está ligada mas não há voz em português
+  // aviso quando a voz do aparelho foi escolhida mas não há voz em português
   avisar() {
-    $('aviso-voz').hidden = !(Ajustes.dados.voz && !this.temPt);
+    const sem = Ajustes.dados.modoVoz === 'aparelho' && !this.temPt;
+    $('aviso-voz').hidden = !sem;
+    $('aviso-voz-ajustes').hidden = !sem;
   },
 
   // no iOS a primeira fala precisa nascer dentro de um toque
@@ -477,21 +575,26 @@ const Voz = {
     return this.disponivel() && (speechSynthesis.speaking || speechSynthesis.pending);
   },
 
+  // quem decide se fala é o tocador (falas.js); aqui só lê o texto.
+  // devolve false se o aparelho não tem voz em português
   falar(texto, opcoes) {
     opcoes = opcoes || {};
-    if (!this.disponivel() || !texto) return;
-    if (!Ajustes.dados.voz && !opcoes.forcar) return;
+    if (!this.disponivel() || !texto) return false;
     if (!this.temPt) this.escolher();
-    if (!this.temPt) return;
+    if (!this.temPt) return false;
 
     const u = new SpeechSynthesisUtterance(texto);
     u.lang = (this.voz && this.voz.lang) || 'pt-BR';
     if (this.voz) u.voice = this.voz;
     u.rate = Ajustes.dados.velocidadeVoz;
     u.pitch = 0.95;
-    u.volume = Ajustes.dados.volume;
+    u.volume = Ajustes.dados.volumeVoz;
     const registro = { tipo: opcoes.tipo || 'texto', u };
-    u.onend = u.onerror = () => { if (this.falaAtual === registro) this.falaAtual = null; };
+    u.onend = u.onerror = () => {
+      if (this.falaAtual !== registro) return; // foi cortada de propósito
+      this.falaAtual = null;
+      if (opcoes.aoAcabar) opcoes.aoAcabar();
+    };
     this.falaAtual = registro;
 
     // o Chrome do Android às vezes engole um speak() logo depois de um cancel()
@@ -502,12 +605,7 @@ const Voz = {
     } else {
       speechSynthesis.speak(u);
     }
-  },
-
-  // deixa curta ("entra", "solta", "espera"): não corta um texto longo no meio
-  deixa(texto) {
-    if (this.falaAtual && this.falaAtual.tipo === 'texto' && this.estaFalando()) return;
-    this.falar(texto, { tipo: 'deixa' });
+    return true;
   },
 
   silenciar() {
@@ -518,7 +616,7 @@ const Voz = {
 };
 
 aoIniciar.push(() => Voz.iniciar());
-Ajustes.aoMudar((chave) => { if (chave === 'voz' || chave === 'vozNome') Voz.escolher(); });
+Ajustes.aoMudar((chave) => { if (chave === 'modoVoz' || chave === 'vozNome') Voz.escolher(); });
 
 /* ---------- 8. guia, ilustração e ponto ocular ---------- */
 
@@ -533,14 +631,6 @@ const Guia = {
     if (Math.abs(s - this.ultimaEscala) < 0.0005) return;
     this.ultimaEscala = s;
     $('guia-forma').style.transform = `scale(${s.toFixed(4)})`;
-  },
-
-  // p = fração do tempo já passada; o anel esvazia conforme o tempo anda
-  anel(p) {
-    const v = Math.round(this.circunferencia * limitar(p, 0, 1) * 100) / 100;
-    if (v === this.ultimoAnel) return;
-    this.ultimoAnel = v;
-    $('anel-cheio').style.strokeDashoffset = v;
   },
 
   zerar() {
@@ -571,6 +661,8 @@ const Ilustracao = {
     if (meuPedido !== this.pedido) return; // já trocou de exercício
     el.innerHTML = svg;
   },
+
+  preparar() { /* pré-carregamento de imagem: chega com as imagens novas */ },
 
   esconder() {
     this.pedido++;
@@ -615,8 +707,8 @@ const Ponto = {
 // cálculo puro: o que mostrar no instante t (em s) de um passo
 const Motor = {
   calcular(passo, t) {
-    if (passo.tipo === 'intro') {
-      const d = passo.duracao;
+    if (passo.tipo === 'fala') {
+      const d = Rota.duracaoFala(passo);
       return { escala: 0.62, anel: t / d, numero: '', rotulo: '', deixa: '', restante: d - t, fim: t >= d };
     }
     const c = passo.contagem;
@@ -682,10 +774,12 @@ const Render = {
     $('sessao-partes').textContent = seg.partes || '';
     this.ultimo = { numero: null, rotulo: null, deixa: null };
     Guia.zerar();
+    $('tela-sessao').classList.toggle('passo-fala', passo.tipo === 'fala');
 
-    if (passo.tipo === 'intro') {
-      $('sessao-exercicio').textContent = seg.nome;
-      $('sessao-como').textContent = seg.intro;
+    if (passo.tipo === 'fala') {
+      // sem texto da rotina (abertura, fim de segmento): o texto da fala vai no lugar
+      $('sessao-exercicio').textContent = passo.titulo;
+      $('sessao-como').textContent = passo.como || Falas.texto(passo.falaId);
       $('sessao-respiracao').textContent = '';
       $('contador').hidden = true;
       Ilustracao.esconder();
@@ -696,20 +790,14 @@ const Render = {
       $('sessao-como').textContent = ex.como;
       $('sessao-respiracao').textContent = ex.respiracao === 'livre' ? 'respiração livre' : (ex.respiracao || '');
       $('contador').hidden = false;
-      if (ex.ponto) {
-        Ilustracao.esconder();
-        Ponto.mostrar(true);
-      } else {
-        Ponto.mostrar(false);
-        Ilustracao.mostrar(ex.id);
-      }
+      Ponto.mostrar(false);
+      Ilustracao.mostrar(ex.id);
     }
     this.botaoTocar();
   },
 
   aplicar(estado) {
     Guia.escala(estado.escala);
-    Guia.anel(estado.anel);
     const numero = String(estado.numero);
     if (numero !== this.ultimo.numero) {
       this.ultimo.numero = numero;
@@ -723,6 +811,8 @@ const Render = {
       this.ultimo.deixa = estado.deixa;
       $('deixa').textContent = estado.deixa;
     }
+    // o ponto ocular só aparece quando a contagem começa
+    Ponto.mostrar(!!estado.ponto);
     if (estado.ponto) Ponto.aplicar(estado.ponto);
   },
 
@@ -735,12 +825,18 @@ const Render = {
   }
 };
 
+// ids das deixas gravadas, pela fase do guia
+const DEIXAS_FALA = { entra: 'entra', sai: 'solta', pausa: 'espera' };
+
 const Sessao = {
   rota: null,
   indice: -1,
   passo: null,
   ativa: false,
   pausado: true,
+  falando: false,  // exercício: o áudio dele ainda está tocando e o contador espera
+  falaItem: null,
+  chegouAoFim: false,
   inicio: 0,
   acumulado: 0,
   duracaoPasso: 0,
@@ -748,35 +844,45 @@ const Sessao = {
   marcas: null,
   rafId: 0,
   intervaloId: 0,
+  fimId: 0,
 
   iniciar(tipo, segmentoId) {
     Som.preparar();
     Voz.preparar();
+    Fala.destravar();
     this.rota = Rota.montar(tipo, segmentoId);
     if (!this.rota.passos.length) return;
     this.ativa = true;
+    this.chegouAoFim = false;
     WakeLock.pedir();
+    // deixas e aterrar ficam na memória a sessão inteira
+    Fala.preparar(Falas.idsDeixas().concat(['pausa-aterrar', 'pausa-aterrar-meio', 'pausa-aterrar-fim']), true);
     this.irPara(0);
     this.ligarRelogio();
   },
 
-  // segundos decorridos no passo atual, descontando pausas
+  // segundos decorridos na contagem do passo atual, descontando pausas.
+  // enquanto o áudio do exercício toca, fica em 0
   tempo() {
+    if (this.falando) return 0;
     const ms = this.pausado ? this.acumulado : this.acumulado + (agora() - this.inicio);
     return ms / 1000;
   },
 
   irPara(i) {
     if (i < 0 || i >= this.rota.passos.length) return;
+    clearTimeout(this.fimId);
     this.indice = i;
     this.passo = this.rota.passos[i];
     this.acumulado = 0;
     this.inicio = agora();
     this.pausado = false;
+    this.falando = false;
+    this.falaItem = null;
     this.duracaoPasso = Rota.duracaoPasso(this.passo);
     this.antesDoPasso = this.rota.passos.slice(0, i).reduce((soma, p) => soma + Rota.duracaoPasso(p), 0);
-    this.marcas = { fase: null, vez: -1, lado: 1, tiques: {} };
-    Voz.silenciar();
+    this.marcas = { fase: null, vez: -1, lado: 1, tiques: {}, meio: false, lados: false, som: false, ultima: false, ficarFim: false };
+    Fala.parar();
 
     const ex = this.passo.exercicio;
     if (ex && ex.escurecer) {
@@ -787,10 +893,55 @@ const Sessao = {
       Telas.mostrar('tela-sessao');
     }
 
-    const seg = this.passo.segmento;
-    const texto = this.passo.tipo === 'intro' ? `${seg.nome}. ${seg.intro}` : `${ex.nome}. ${ex.como}`;
-    Voz.falar(texto, { tipo: 'texto' });
+    this.tocarFalaDoPasso();
+    this.prepararProximo();
     this.atualizar();
+  },
+
+  // passo de fala: o áudio toca junto com o tempo da tela.
+  // exercício: o áudio toca primeiro, com o guia parado; o contador começa no fim dele
+  tocarFalaDoPasso() {
+    const passo = this.passo;
+    if (passo.tipo === 'fala') {
+      if (passo.falaId) this.falaItem = Fala.tocar(passo.falaId, { legenda: !!passo.como });
+      return;
+    }
+    const id = passo.exercicio.id;
+    if (Ajustes.dados.modoVoz === 'nenhuma' || !Falas.tem(id)) return;
+    this.falando = true;
+    this.falaItem = Fala.tocar(id, {
+      aoAcabar: () => { if (this.passo === passo && this.falando) this.comecarContagem(); }
+    });
+    if (!this.falaItem && this.falando) this.comecarContagem();
+  },
+
+  comecarContagem() {
+    this.falando = false;
+    this.falaItem = null;
+    this.acumulado = 0;
+    this.inicio = agora();
+  },
+
+  // o próximo áudio e a próxima imagem já ficam carregados
+  prepararProximo() {
+    const ids = [];
+    const passo = this.passo;
+    if (passo.tipo === 'exercicio') {
+      const id = passo.exercicio.id;
+      ids.push(`${id}-meio`, 'ultima', 'outro-lado-1', 'outro-lado-2');
+      if (id === 'soltar-o-ar') ids.push('soltar-o-ar-som');
+      if (passo.exercicio.ponto) ids.push('seguir-o-ponto-lados');
+      if (passo.exercicio.escurecer) ids.push('ficar-fim', 'fim');
+    }
+    const prox = this.rota.passos[this.indice + 1];
+    if (prox) {
+      if (prox.tipo === 'fala') ids.unshift(prox.falaId);
+      else {
+        ids.unshift(prox.exercicio.id);
+        Ilustracao.preparar(prox.exercicio.id);
+      }
+    }
+    Fala.preparar(ids.filter(Boolean));
   },
 
   proximo() {
@@ -802,24 +953,32 @@ const Sessao = {
   // como num tocador: volta ao começo do passo; se já está no começo, vai pro anterior
   anterior() {
     if (!this.ativa) return;
-    if (this.tempo() > 3 || this.indice === 0) this.irPara(this.indice);
+    if (this.tempo() > 3 || this.falando || this.indice === 0) this.irPara(this.indice);
     else this.irPara(this.indice - 1);
   },
 
   pausar() {
     if (this.pausado || !this.ativa) return;
-    this.acumulado += agora() - this.inicio;
+    if (!this.falando) this.acumulado += agora() - this.inicio;
     this.pausado = true;
-    Voz.silenciar();
+    Fala.pausar();
     Render.botaoTocar();
   },
 
   retomar() {
     if (!this.pausado || !this.ativa) return;
     Som.preparar();
+    Fala.destravar();
     this.inicio = agora();
     this.pausado = false;
     Render.botaoTocar();
+    // se a fala do passo foi cortada (pelo aterrar), começa o passo de novo
+    const cortada = this.falaItem && this.falaItem.interrompida;
+    if (cortada && (this.falando || this.passo.tipo === 'fala')) {
+      this.irPara(this.indice);
+      return;
+    }
+    Fala.retomar();
   },
 
   alternar() {
@@ -827,24 +986,30 @@ const Sessao = {
     else this.pausar();
   },
 
+  // sai da sessão; o check-in final decide se aparece
   encerrar() {
+    const chegou = this.chegouAoFim;
     this.ativa = false;
     this.pausado = true;
+    this.falando = false;
+    clearTimeout(this.fimId);
     this.desligarRelogio();
-    Voz.silenciar();
+    Fala.parar();
     WakeLock.soltar();
     Ficar.parar();
     Ilustracao.esconder();
-    Telas.mostrar('tela-inicio');
+    Fluxo.depoisDaSessao(chegou);
   },
 
-  // fim da rota: acorde e tela de fim, dentro do Ficar
+  // fim da rota: acorde, tela de fim dentro do Ficar e a fala "fim"
   terminar() {
     this.pausado = true;
+    this.chegouAoFim = true;
     this.desligarRelogio();
-    Voz.silenciar();
+    Fala.parar();
     Som.acorde();
     Ficar.mostrarFim();
+    this.fimId = setTimeout(() => { if (this.ativa) Fala.tocar('fim'); }, 1500);
   },
 
   ligarRelogio() {
@@ -869,37 +1034,87 @@ const Sessao = {
     if (!this.ativa || !this.passo) return;
     const t = this.tempo();
     const estado = Motor.calcular(this.passo, t);
-    if (!this.pausado) this.eventos(estado);
+    if (this.falando) {
+      // guia parado e sem palavra de fase enquanto o áudio do exercício toca
+      estado.escala = 0.62;
+      estado.deixa = '';
+      delete estado.ponto;
+      estado.fim = false;
+    }
+    if (!this.pausado && !this.falando) this.eventos(estado, t);
     if (!(this.passo.exercicio && this.passo.exercicio.escurecer)) {
       Render.aplicar(estado);
-      Render.barra((this.antesDoPasso + Math.min(t, this.duracaoPasso)) / this.rota.duracao);
+      const audio = this.passo.tipo === 'exercicio' ? Rota.duracaoAudioExercicio(this.passo) : 0;
+      const dentro = this.falando ? 0 : audio + t;
+      Render.barra((this.antesDoPasso + Math.min(dentro, this.duracaoPasso)) / this.rota.duracao);
     }
     if (estado.fim && !this.pausado) this.concluirPasso();
   },
 
-  // sons e deixas de voz nas viradas de fase, repetição e lado, e nos 3 últimos segundos
-  eventos(estado) {
+  deixa(base) {
+    const id = Falas.sortear(base);
+    if (id) Fala.tocar(id, { tipo: 'deixa' });
+  },
+
+  /* sons e falas nas viradas de fase, repetição e lado, e nos 3 últimos segundos.
+     Deixas (entra/solta/espera) só nas 2 primeiras respirações; depois, só o guia. */
+  eventos(estado, t) {
     const m = this.marcas;
     const passo = this.passo;
     if (passo.tipo === 'exercicio') {
       const c = passo.contagem;
+      const ex = passo.exercicio;
+      const total = Rota.duracaoContagem(passo);
+
       if (c.tipo === 'respiracoes' && estado.fase !== m.fase) {
         m.fase = estado.fase;
         const pausaZerada = estado.fase === 'pausa' && Ajustes.dados.pausa === 0;
-        if (!estado.fim && !pausaZerada) Voz.deixa(DEIXAS[estado.fase]);
+        if (!estado.fim) {
+          const ultima = estado.fase === 'entra' && estado.ciclo === c.valor - 1 && !m.ultima;
+          if (ultima) {
+            m.ultima = true;
+            Fala.tocar('ultima', { tipo: 'extra' });
+          } else if (estado.ciclo < 2 && !pausaZerada) {
+            this.deixa(DEIXAS_FALA[estado.fase]);
+          }
+          // "Soltar o ar": o suspiro com som nas 3 últimas respirações
+          if (ex.id === 'soltar-o-ar' && !m.som && estado.fase === 'entra' && estado.ciclo === Math.max(0, c.valor - 3)) {
+            m.som = true;
+            Fala.tocar('soltar-o-ar-som', { tipo: 'extra' });
+          }
+        }
       }
       if (c.tipo === 'vezes' && estado.vez !== m.vez) {
         m.vez = estado.vez;
-        if (!estado.fim) Som.marca();
+        if (!estado.fim) {
+          Som.marca();
+          if (estado.vez === c.valor - 1 && !m.ultima) {
+            m.ultima = true;
+            Fala.tocar('ultima', { tipo: 'extra' });
+          }
+        }
       }
       if (c.tipo === 'segundos' && c.cadaLado && estado.lado !== m.lado) {
         m.lado = estado.lado;
         if (estado.lado === 2) {
           Som.sino();
-          Voz.falar('troca de lado', { tipo: 'deixa' });
+          const id = Falas.sortear('outro-lado');
+          if (id) Fala.tocar(id, { tipo: 'extra' });
         }
       }
-      if (passo.exercicio.escurecer) return; // o Ficar termina em silêncio
+      // na metade: <id>-meio, e o ponto ocular que passa pro lado a lado
+      if (!m.meio && t >= total / 2 && !estado.fim) {
+        m.meio = true;
+        if (Falas.tem(`${ex.id}-meio`)) Fala.tocar(`${ex.id}-meio`, { tipo: 'extra' });
+        if (ex.ponto && Falas.tem('seguir-o-ponto-lados')) Fala.tocar('seguir-o-ponto-lados', { tipo: 'extra' });
+      }
+      if (ex.escurecer) {
+        if (!m.ficarFim && estado.restante <= 20 && total > 20) {
+          m.ficarFim = true;
+          Fala.tocar('ficar-fim', { tipo: 'extra' });
+        }
+        return; // o Ficar termina em silêncio
+      }
     }
     const r = Math.ceil(estado.restante);
     if (r >= 1 && r <= 3 && !m.tiques[r]) {
@@ -909,13 +1124,13 @@ const Sessao = {
   },
 
   concluirPasso() {
+    // a fala do passo termina antes de seguir (até 8 s a mais)
+    if (this.passo.tipo === 'fala' && Fala.ocupado() && this.tempo() < this.duracaoPasso + 8) return;
     const ultimo = this.indice === this.rota.passos.length - 1;
     if (ultimo) {
       this.terminar();
       return;
     }
-    // a intro espera a voz terminar de ler (até 8 s a mais)
-    if (this.passo.tipo === 'intro' && Voz.estaFalando() && this.tempo() < this.duracaoPasso + 8) return;
     Som.sino();
     this.irPara(this.indice + 1);
   }
@@ -982,11 +1197,12 @@ const Aterrar = {
     this.inicio = agora();
     this.ultimaFase = null;
     this.liberado = false;
+    this.meio = false;
     $('btn-aterrar-voltar').hidden = true;
     $('aterrar-deixa').textContent = '';
     $('aterrar-forma').style.transform = 'scale(1)';
     Telas.mostrar('tela-aterrar');
-    Voz.falar(R.textoAterrar, { tipo: 'texto' });
+    Fala.tocar('pausa-aterrar', { texto: Falas.texto('pausa-aterrar') || R.textoAterrar });
     cancelAnimationFrame(this.rafId);
     const laco = () => {
       if (!this.ativo) return;
@@ -1014,11 +1230,15 @@ const Aterrar = {
     if (fase !== this.ultimaFase) {
       this.ultimaFase = fase;
       $('aterrar-deixa').textContent = fase === 'solta' ? 'solta o ar devagar' : 'deixa o ar entrar';
-      if (fase === 'solta') Voz.deixa('solta');
+    }
+    if (!this.meio && t >= R.duracaoAterrar / 2) {
+      this.meio = true;
+      Fala.tocar('pausa-aterrar-meio', { tipo: 'extra' });
     }
     if (!this.liberado && t >= R.duracaoAterrar) {
       this.liberado = true;
       $('btn-aterrar-voltar').hidden = false;
+      Fala.tocar('pausa-aterrar-fim', { tipo: 'extra' });
     }
   },
 
@@ -1026,7 +1246,7 @@ const Aterrar = {
     this.ativo = false;
     cancelAnimationFrame(this.rafId);
     this.rafId = 0;
-    Voz.silenciar();
+    Fala.parar();
   },
 
   // volta pra sessão, ainda pausada: a pessoa toca quando quiser
@@ -1067,6 +1287,7 @@ const Ficar = {
     $('ficar-texto').textContent = passo.exercicio.como;
     $('ficar-acoes').hidden = true;
     $('btn-ficar-continuar').hidden = false;
+    $('btn-ficar-encerrar').textContent = 'encerrar';
     $('ficar-escuro').style.opacity = '0';
     $('ficar-miolo').style.opacity = '1';
     $('tela-ficar').classList.remove('escurecida');
@@ -1118,6 +1339,7 @@ const Ficar = {
     $('ficar-titulo').textContent = 'Pronto.';
     $('ficar-texto').textContent = 'Fica mais um pouco se quiser. Quando levantar, levanta devagar.';
     $('btn-ficar-continuar').hidden = true;
+    $('btn-ficar-encerrar').textContent = 'terminar';
     $('ficar-acoes').hidden = false;
   },
 
@@ -1148,6 +1370,7 @@ aoIniciar.push(() => {
 });
 /* ---------- 13. arranque ---------- */
 
+// chamado por js/inicio.js, depois que todos os arquivos carregaram
 function iniciarApp() {
   Ajustes.carregar();
   $('texto-sinais').textContent = R.sinaisNormais;
@@ -1156,5 +1379,3 @@ function iniciarApp() {
   aoIniciar.forEach((f) => f());
   Telas.mostrar(ler(CHAVE_SINAIS) === '1' ? 'tela-inicio' : 'tela-sinais');
 }
-
-iniciarApp();
