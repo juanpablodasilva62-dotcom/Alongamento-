@@ -733,6 +733,95 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 
 .historico-valores { white-space: nowrap; }
 
+/* ---------- feedback ---------- */
+
+.fb-topo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 4px;
+}
+
+.fb-topo-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fb-pular { padding-right: 0; }
+
+.fb-miolo { justify-content: flex-start; padding-top: 18px; }
+
+.fb-pergunta {
+  font-size: clamp(26px, 7.4vw, 32px);
+  text-wrap: balance;
+}
+
+.fb-escala {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.fb-num {
+  min-height: 60px;
+  border: 1px solid var(--linha-forte);
+  border-radius: 16px;
+  font-family: var(--fonte-titulo);
+  font-size: 26px;
+  text-align: center;
+}
+
+.fb-opcoes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.fb-campo {
+  font: inherit;
+  color: inherit;
+  width: 100%;
+  background: #FFFFFF;
+  border: 1px solid var(--linha-forte);
+  border-radius: 14px;
+  padding: 12px 14px;
+  min-height: 52px;
+  resize: vertical;
+}
+
+.fb-escolha {
+  font-family: var(--fonte-titulo);
+  font-size: 22px;
+}
+
+.fb-rotulo-campo { font-size: 16px; color: var(--tinta-2); }
+
+.fb-cuidado {
+  font-size: 15px;
+  color: var(--tinta-2);
+  border-left: 1px solid var(--linha-forte);
+  padding-left: 10px;
+}
+
+.fb-nota { font-size: 15px; color: var(--tinta-2); }
+
+.fb-resumo {
+  margin: 0;
+  font-family: var(--fonte-texto);
+  font-size: 13.5px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  color: var(--tinta-2);
+  background: #FFFFFF;
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+a.btn { text-decoration: none; color: inherit; }
+
 /* ---------- folha de ajustes ---------- */
 
 .folha-fundo {
