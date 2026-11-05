@@ -1115,6 +1115,7 @@ a.btn { text-decoration: none; color: inherit; }
 
 .btn-ouvir {
   align-self: flex-start;
+  justify-content: flex-start;
   padding: 0;
   text-decoration: underline;
   text-decoration-color: var(--linha-forte);
