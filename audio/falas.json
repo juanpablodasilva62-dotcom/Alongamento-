@@ -1,0 +1,674 @@
+[
+ {
+  "id": "abertura",
+  "bloco": "01",
+  "tipo": "geral",
+  "segmento": null,
+  "texto": "Essa é uma rotina pra soltar a couraça... do jeito que Reich pensava o corpo. De cima pra baixo... dos olhos até a pelve. Aqui não é só alongar músculo... é devolver movimento pro que ficou preso. E o caminho é a respiração... principalmente a saída do ar. Deixa uma toalha enrolada perto de você... ela vai servir lá no peito. Sem pressa.",
+  "duracao": 25.1
+ },
+ {
+  "id": "chegar-intro",
+  "bloco": "01",
+  "tipo": "intro",
+  "segmento": "chegar",
+  "texto": "Deita de costas... joelhos dobrados... os pés apoiados no chão, na largura do quadril. Uma mão no peito... a outra na barriga. Antes de mexer em qualquer coisa... só chega.",
+  "duracao": 13.37
+ },
+ {
+  "id": "varredura",
+  "bloco": "01",
+  "tipo": "exercicio",
+  "segmento": "chegar",
+  "texto": "Passa a atenção pelo corpo... sem mudar nada. A testa... os olhos... a mandíbula... os ombros... a barriga... a virilha... as pernas. Só repara onde aperta. Não precisa soltar ainda... só reconhecer.",
+  "duracao": 19.34
+ },
+ {
+  "id": "soltar-o-ar",
+  "bloco": "01",
+  "tipo": "exercicio",
+  "segmento": "chegar",
+  "texto": "Agora deixa o ar sair... devagar... até o fim. Lá no fim... espera um pouco no vazio. E deixa o ar entrar sozinho... sem puxar.",
+  "duracao": 11.4
+ },
+ {
+  "id": "soltar-o-ar-som",
+  "bloco": "01",
+  "tipo": "extra",
+  "segmento": "chegar",
+  "texto": "Agora... deixa o ar sair com um suspiro... com som.",
+  "duracao": 4.25
+ },
+ {
+  "id": "ocular-intro",
+  "bloco": "02",
+  "tipo": "intro",
+  "segmento": "ocular",
+  "texto": "Primeiro segmento... os olhos. A testa, as pálpebras, o couro cabeludo. Pra Reich, é aqui que a couraça começa... no olhar parado, que olha sem ver... na testa que não mexe. Aqui fica preso o medo... e o choro que não saiu. Então o trabalho é devolver movimento pro olhar.",
+  "duracao": 22.49
+ },
+ {
+  "id": "arregalar-e-soltar",
+  "bloco": "02",
+  "tipo": "exercicio",
+  "segmento": "ocular",
+  "texto": "Abre bem os olhos... como num susto. A testa sobe... segura... e solta tudo de uma vez, deixando o ar sair.",
+  "duracao": 8.81
+ },
+ {
+  "id": "seguir-o-ponto",
+  "bloco": "02",
+  "tipo": "exercicio",
+  "segmento": "ocular",
+  "texto": "Agora segue o ponto na tela só com os olhos... a cabeça fica parada. Sem prender o ar... os olhos acompanham devagar.",
+  "duracao": 8.69
+ },
+ {
+  "id": "seguir-o-ponto-lados",
+  "bloco": "02",
+  "tipo": "extra",
+  "segmento": "ocular",
+  "texto": "Agora de um lado pro outro...",
+  "duracao": 1.56
+ },
+ {
+  "id": "longe-e-perto",
+  "bloco": "02",
+  "tipo": "exercicio",
+  "segmento": "ocular",
+  "texto": "Olha pra um ponto longe... o teto, a janela. Depois traz o olhar pra palma da mão, perto do rosto. Longe... e perto. No perto... solta o ar.",
+  "duracao": 12.07
+ },
+ {
+  "id": "franzir-e-soltar",
+  "bloco": "02",
+  "tipo": "exercicio",
+  "segmento": "ocular",
+  "texto": "Franze a testa com força... junta as sobrancelhas... e solta. Deixa a testa ficar lisa... e o ar sair.",
+  "duracao": 8.02
+ },
+ {
+  "id": "palmas-nos-olhos",
+  "bloco": "02",
+  "tipo": "exercicio",
+  "segmento": "ocular",
+  "texto": "Esfrega as mãos até esquentar... e cobre os olhos fechados, sem apertar. Escuro total. Só respira aí dentro... e deixa os olhos descansarem no escuro.",
+  "duracao": 10.7
+ },
+ {
+  "id": "palmas-nos-olhos-meio",
+  "bloco": "02",
+  "tipo": "meio",
+  "segmento": "ocular",
+  "texto": "Se vierem lágrimas... deixa. Os olhos também soltam chorando.",
+  "duracao": 4.3
+ },
+ {
+  "id": "ocular-fim",
+  "bloco": "02",
+  "tipo": "fim",
+  "segmento": "ocular",
+  "texto": "Tira as mãos devagar... abre os olhos... e olha o quarto. Repara se o olhar tá diferente... mais solto... mais presente.",
+  "duracao": 9.31
+ },
+ {
+  "id": "oral-intro",
+  "bloco": "03",
+  "tipo": "intro",
+  "segmento": "oral",
+  "texto": "Segundo segmento... a boca. Os lábios, o queixo, a mandíbula, a garganta lá em cima. Pra Reich, aqui se segura o choro... a raiva de morder... e a vontade de sugar, que é a mais antiga que a gente tem. É o queixo firme pra não chorar... o maxilar travado o dia inteiro. O trabalho aqui é deixar a mandíbula pesar.",
+  "duracao": 28.18
+ },
+ {
+  "id": "mandibula-pesada",
+  "bloco": "03",
+  "tipo": "exercicio",
+  "segmento": "oral",
+  "texto": "Deixa a boca entreaberta... a língua solta, lá no fundo. E a cada vez que o ar sai... deixa o queixo cair mais um pouco. Sem forçar... só peso.",
+  "duracao": 13.1
+ },
+ {
+  "id": "mandibula-pesada-meio",
+  "bloco": "03",
+  "tipo": "meio",
+  "segmento": "oral",
+  "texto": "Repara se a mandíbula quer fechar de novo... e deixa ela cair outra vez.",
+  "duracao": 5.47
+ },
+ {
+  "id": "bocejo",
+  "bloco": "03",
+  "tipo": "exercicio",
+  "segmento": "oral",
+  "texto": "Abre a boca como num bocejo... grande... e deixa vir um de verdade. Se não vier... finge até vir.",
+  "duracao": 7.58
+ },
+ {
+  "id": "morder-o-ar",
+  "bloco": "03",
+  "tipo": "exercicio",
+  "segmento": "oral",
+  "texto": "Agora morde o ar... abre e fecha a boca, exagerado... lento... como quem mastiga alguma coisa grande. Deixa a força aparecer na mandíbula.",
+  "duracao": 9.94
+ },
+ {
+  "id": "sugar-e-soltar",
+  "bloco": "03",
+  "tipo": "exercicio",
+  "segmento": "oral",
+  "texto": "Faz um bico... e puxa o ar como se fosse por um canudo. E solta... com um pah.",
+  "duracao": 5.98
+ },
+ {
+  "id": "cara-de-choro",
+  "bloco": "03",
+  "tipo": "exercicio",
+  "segmento": "oral",
+  "texto": "Puxa os cantos da boca pra baixo... o queixo pra frente... como quem vai chorar. Segura um pouco... e solta. Se o choro quiser vir... ele pode.",
+  "duracao": 11.93
+ },
+ {
+  "id": "masseter",
+  "bloco": "03",
+  "tipo": "exercicio",
+  "segmento": "oral",
+  "texto": "Põe os dedos nas bochechas... perto de onde a mandíbula encaixa. Faz círculos lentos, com a boca entreaberta. É aí que a mordida fica guardada.",
+  "duracao": 10.61
+ },
+ {
+  "id": "oral-fim",
+  "bloco": "03",
+  "tipo": "fim",
+  "segmento": "oral",
+  "texto": "Deixa a boca descansar... os dentes sem encostar. Repara como tá o rosto agora.",
+  "duracao": 6.94
+ },
+ {
+  "id": "cervical-intro",
+  "bloco": "04",
+  "tipo": "intro",
+  "segmento": "cervical",
+  "texto": "Terceiro segmento... o pescoço. A nuca, a garganta, a língua. Pra Reich, aqui fica o que a gente engole... a raiva engolida... o choro engolido. É o pescoço duro... a voz presa... o engolir seco quando alguma coisa incomoda. O trabalho aqui é a cabeça pesar... e a garganta soltar som.",
+  "duracao": 26.52
+ },
+ {
+  "id": "cabeca-pesada",
+  "bloco": "04",
+  "tipo": "exercicio",
+  "segmento": "cervical",
+  "texto": "Deixa o queixo descer um pouco... e sente a nuca alongar no chão. A cada saída do ar... a nuca solta mais. A cabeça é pesada... deixa o chão segurar ela.",
+  "duracao": 12.89
+ },
+ {
+  "id": "rotacao-lenta",
+  "bloco": "04",
+  "tipo": "exercicio",
+  "segmento": "cervical",
+  "texto": "Vira o rosto devagar pra um lado... até onde for confortável... soltando o ar. Volta pro centro... e vai pro outro lado.",
+  "duracao": 9.84
+ },
+ {
+  "id": "orelha-no-ombro",
+  "bloco": "04",
+  "tipo": "exercicio",
+  "segmento": "cervical",
+  "texto": "Inclina a cabeça pra um lado... a orelha indo pro ombro. A mão desse mesmo lado puxa de leve o outro ombro pra baixo. Solta o ar... e deixa alongar.",
+  "duracao": 12.1
+ },
+ {
+  "id": "suspiro-com-som",
+  "bloco": "04",
+  "tipo": "exercicio",
+  "segmento": "cervical",
+  "texto": "Agora solta o ar com um aaah baixo... a garganta aberta... sem forçar a voz. Deixa o som sair junto com o ar... do jeito que ele vier.",
+  "duracao": 12.19
+ },
+ {
+  "id": "suspiro-com-som-meio",
+  "bloco": "04",
+  "tipo": "meio",
+  "segmento": "cervical",
+  "texto": "Se o som quiser crescer... deixa. Se quiser sumir... deixa também.",
+  "duracao": 5.45
+ },
+ {
+  "id": "base-do-cranio",
+  "bloco": "04",
+  "tipo": "exercicio",
+  "segmento": "cervical",
+  "texto": "Põe os polegares na base da nuca... onde o crânio termina. Pressão leve... em círculos pequenos.",
+  "duracao": 7.32
+ },
+ {
+  "id": "cervical-fim",
+  "bloco": "04",
+  "tipo": "fim",
+  "segmento": "cervical",
+  "texto": "Deixa a cabeça descansar. Engole uma vez... e repara como tá a garganta.",
+  "duracao": 5.64
+ },
+ {
+  "id": "toracico-intro",
+  "bloco": "05",
+  "tipo": "intro",
+  "segmento": "toracico",
+  "texto": "Quarto segmento... o peito. As costelas, os ombros, os braços, até as mãos. Pra Reich, esse é o centro da couraça. O peito fica preso lá em cima... cheio de ar... como quem segura a respiração pra não sentir. Aqui se segura a raiva... o choro fundo... e a saudade... o braço que queria alcançar alguém e não foi. O trabalho é deixar o peito descer... e devolver o alcançar.",
+  "duracao": 30.0
+ },
+ {
+  "id": "soltar-o-ar-todo",
+  "bloco": "05",
+  "tipo": "exercicio",
+  "segmento": "toracico",
+  "texto": "Solta o ar com um suspiro... até o fim. Deixa o peito afundar... e espera. A inspiração vem sozinha... você não precisa puxar.",
+  "duracao": 10.2
+ },
+ {
+  "id": "soltar-o-ar-todo-meio",
+  "bloco": "05",
+  "tipo": "meio",
+  "segmento": "toracico",
+  "texto": "Repara se o peito quer subir antes da hora... e deixa ele descer de novo.",
+  "duracao": 4.39
+ },
+ {
+  "id": "abrir-o-peito",
+  "bloco": "05",
+  "tipo": "exercicio",
+  "segmento": "toracico",
+  "texto": "Pega a toalha enrolada e põe atravessada embaixo das costas... na altura das escápulas. Deita por cima... e abre os braços no chão. Respira deixando as costelas abrirem pros lados.",
+  "duracao": 11.81
+ },
+ {
+  "id": "alcancar",
+  "bloco": "05",
+  "tipo": "exercicio",
+  "segmento": "toracico",
+  "texto": "Tira a toalha. Estica os braços pro alto... as mãos abertas, como quem vai pegar alguma coisa... ou alguém. Segura... e deixa os braços caírem pesados, soltando o ar.",
+  "duracao": 12.19
+ },
+ {
+  "id": "ombros",
+  "bloco": "05",
+  "tipo": "exercicio",
+  "segmento": "toracico",
+  "texto": "Encolhe os ombros até as orelhas... segura... e solta de uma vez, deixando o ar sair.",
+  "duracao": 5.83
+ },
+ {
+  "id": "circulos-de-ombro",
+  "bloco": "05",
+  "tipo": "exercicio",
+  "segmento": "toracico",
+  "texto": "Agora círculos com os ombros... pra trás... lentos.",
+  "duracao": 3.84
+ },
+ {
+  "id": "maos",
+  "bloco": "05",
+  "tipo": "exercicio",
+  "segmento": "toracico",
+  "texto": "Abre e fecha as mãos com força... e depois sacode os braços e as mãos... soltos.",
+  "duracao": 5.42
+ },
+ {
+  "id": "toracico-fim",
+  "bloco": "05",
+  "tipo": "fim",
+  "segmento": "toracico",
+  "texto": "Deixa os braços no chão... as mãos abertas. Repara o peito subindo e descendo.",
+  "duracao": 5.52
+ },
+ {
+  "id": "diafragmatico-intro",
+  "bloco": "06",
+  "tipo": "intro",
+  "segmento": "diafragmatico",
+  "texto": "Quinto segmento... o diafragma. O estômago... o plexo solar... ali embaixo das costelas. Pra Reich, esse é o segmento mais difícil... e o mais importante. É um cinto de tensão que não deixa o ar sair até o fim. Quando ele cede... a respiração vira uma onda que desce pelo corpo... até a pelve. Então aqui é barriga primeiro... e saída longa.",
+  "duracao": 29.54
+ },
+ {
+  "id": "barriga-primeiro",
+  "bloco": "06",
+  "tipo": "exercicio",
+  "segmento": "diafragmatico",
+  "texto": "Uma mão na barriga... a outra no peito. Quando o ar entra... deixa a barriga subir antes do peito. Quando sai... a barriga desce primeiro. E a saída é mais longa que a entrada.",
+  "duracao": 14.06
+ },
+ {
+  "id": "barriga-primeiro-meio",
+  "bloco": "06",
+  "tipo": "meio",
+  "segmento": "diafragmatico",
+  "texto": "Se a mão do peito tiver mexendo mais... volta a atenção pra barriga.",
+  "duracao": 4.13
+ },
+ {
+  "id": "haaa",
+  "bloco": "06",
+  "tipo": "exercicio",
+  "segmento": "diafragmatico",
+  "texto": "Agora solta o ar com um haaa aberto... como quem embaça um vidro... até o fim. Sem forçar... só esvaziando.",
+  "duracao": 9.12
+ },
+ {
+  "id": "lateral",
+  "bloco": "06",
+  "tipo": "exercicio",
+  "segmento": "diafragmatico",
+  "texto": "Senta, ou fica em pé. Leva um braço por cima da cabeça... e inclina pro outro lado. Respira pro lado que tá alongando... sentindo as costelas abrirem ali.",
+  "duracao": 11.52
+ },
+ {
+  "id": "gato-camelo-lento",
+  "bloco": "06",
+  "tipo": "exercicio",
+  "segmento": "diafragmatico",
+  "texto": "Fica de quatro apoios... as mãos embaixo dos ombros, os joelhos embaixo do quadril. Soltando o ar... arredonda as costas. Deixando o ar entrar... abre o peito. Devagar... no ritmo da respiração.",
+  "duracao": 14.98
+ },
+ {
+  "id": "gato-camelo-lento-meio",
+  "bloco": "06",
+  "tipo": "meio",
+  "segmento": "diafragmatico",
+  "texto": "O movimento segue o ar... não o contrário.",
+  "duracao": 2.98
+ },
+ {
+  "id": "bocejo-fundo",
+  "bloco": "06",
+  "tipo": "exercicio",
+  "segmento": "diafragmatico",
+  "texto": "Senta. Estica os braços pro alto... e boceja fundo... alongando o tronco inteiro.",
+  "duracao": 6.89
+ },
+ {
+  "id": "diafragmatico-fim",
+  "bloco": "06",
+  "tipo": "fim",
+  "segmento": "diafragmatico",
+  "texto": "Deita de novo... joelhos dobrados. Repara se o ar tá indo mais fundo agora... até a barriga.",
+  "duracao": 6.77
+ },
+ {
+  "id": "abdominal-intro",
+  "bloco": "07",
+  "tipo": "intro",
+  "segmento": "abdominal",
+  "texto": "Sexto segmento... a barriga. A parede da barriga, os lados, a lombar. Pra Reich, a barriga dura é defesa... é o corpo esperando um ataque. Por isso tanta gente sente cócegas demais dos lados. Aqui fica guardado o medo. O trabalho é ter uma barriga mole... que cai sozinha quando o ar sai.",
+  "duracao": 26.4
+ },
+ {
+  "id": "barriga-mole",
+  "bloco": "07",
+  "tipo": "exercicio",
+  "segmento": "abdominal",
+  "texto": "Deitado de costas... joelhos dobrados. A cada saída do ar... deixa a parede da barriga despencar. Não empurra pra fora... não puxa pra dentro. Só larga.",
+  "duracao": 13.8
+ },
+ {
+  "id": "barriga-mole-meio",
+  "bloco": "07",
+  "tipo": "meio",
+  "segmento": "abdominal",
+  "texto": "Se ela endurecer de novo... tudo bem. Na próxima saída... larga outra vez.",
+  "duracao": 6.24
+ },
+ {
+  "id": "torcao-deitada",
+  "bloco": "07",
+  "tipo": "exercicio",
+  "segmento": "abdominal",
+  "texto": "Junta os joelhos e deixa eles caírem pra um lado... os braços abertos no chão... o rosto virando pro lado oposto. Respira na barriga.",
+  "duracao": 9.82
+ },
+ {
+  "id": "crianca",
+  "bloco": "07",
+  "tipo": "exercicio",
+  "segmento": "abdominal",
+  "texto": "Senta nos calcanhares... e leva a testa até o chão. Os braços ficam do lado do corpo, pra trás. Respira nas costas... sentindo elas abrirem.",
+  "duracao": 11.02
+ },
+ {
+  "id": "maos-na-barriga",
+  "bloco": "07",
+  "tipo": "exercicio",
+  "segmento": "abdominal",
+  "texto": "Volta a deitar... as mãos na barriga. Faz círculos lentos, no sentido do relógio... com pressão leve.",
+  "duracao": 8.09
+ },
+ {
+  "id": "abdominal-fim",
+  "bloco": "07",
+  "tipo": "fim",
+  "segmento": "abdominal",
+  "texto": "Deixa as mãos paradas na barriga... e repara se ela tá mais mole agora.",
+  "duracao": 4.78
+ },
+ {
+  "id": "pelvico-intro",
+  "bloco": "08",
+  "tipo": "intro",
+  "segmento": "pelvico",
+  "texto": "Último segmento... a pelve. O quadril, a virilha, as nádegas, as pernas. Ele fica por último de propósito... Reich só chegava aqui quando os outros já tinham soltado. Pra ele, a pelve presa fica puxada pra trás... dura... sem vida. É ali que a onda da respiração termina... e onde a ansiedade e a raiva ficam guardadas. O movimento que a couraça segura é simples... no fim da expiração, a pelve rola pra frente sozinha. Aqui é deixar isso acontecer... sem força.",
+  "duracao": 38.62
+ },
+ {
+  "id": "bascula",
+  "bloco": "08",
+  "tipo": "exercicio",
+  "segmento": "pelvico",
+  "texto": "Deitado, joelhos dobrados. Quando o ar sai... a lombar encosta no chão e a pelve rola pra frente. Quando o ar entra... ela volta pro meio. Pequeno... devagar... a respiração conduz.",
+  "duracao": 16.01
+ },
+ {
+  "id": "bascula-meio",
+  "bloco": "08",
+  "tipo": "meio",
+  "segmento": "pelvico",
+  "texto": "Não precisa fazer o movimento... deixa a saída do ar levar a pelve.",
+  "duracao": 4.92
+ },
+ {
+  "id": "ponte",
+  "bloco": "08",
+  "tipo": "exercicio",
+  "segmento": "pelvico",
+  "texto": "Soltando o ar... sobe o quadril devagar. Deixando o ar entrar... desce, uma vértebra de cada vez... até a lombar encostar.",
+  "duracao": 9.96
+ },
+ {
+  "id": "borboleta",
+  "bloco": "08",
+  "tipo": "exercicio",
+  "segmento": "pelvico",
+  "texto": "Junta as plantas dos pés... e deixa os joelhos abrirem, caindo pros lados. As mãos na barriga. A cada saída do ar... a virilha solta mais um pouco.",
+  "duracao": 11.59
+ },
+ {
+  "id": "flexor-do-quadril",
+  "bloco": "08",
+  "tipo": "exercicio",
+  "segmento": "pelvico",
+  "texto": "Ajoelha numa perna... a outra pra frente, com o pé no chão. Leva a pelve pra frente... o tronco reto. Solta o ar enquanto a pelve vai.",
+  "duracao": 10.61
+ },
+ {
+  "id": "aterrar",
+  "bloco": "08",
+  "tipo": "exercicio",
+  "segmento": "pelvico",
+  "texto": "Agora fica em pé... os pés na largura do quadril, os joelhos um pouco dobrados. O peso desce pros pés... você no chão. Respira aí. Se as pernas tremerem... deixa. Esse tremor é o corpo soltando.",
+  "duracao": 15.48
+ },
+ {
+  "id": "aterrar-meio",
+  "bloco": "08",
+  "tipo": "meio",
+  "segmento": "pelvico",
+  "texto": "Sente o chão embaixo dos pés... ele te segura.",
+  "duracao": 3.31
+ },
+ {
+  "id": "pelvico-fim",
+  "bloco": "08",
+  "tipo": "fim",
+  "segmento": "pelvico",
+  "texto": "Volta a deitar... devagar. Joelhos dobrados... os braços soltos do lado do corpo.",
+  "duracao": 6.6
+ },
+ {
+  "id": "ficar",
+  "bloco": "09",
+  "tipo": "exercicio",
+  "segmento": "ficar",
+  "texto": "Agora fica. Sem tarefa nenhuma... deixa o corpo respirar sozinho. Passa a atenção de cima pra baixo... os olhos... a boca... o pescoço... o peito... a barriga... a pelve... as pernas. Repara o que mudou. Se vier tremor, suspiro ou bocejo... deixa passar.",
+  "duracao": 25.25
+ },
+ {
+  "id": "ficar-fim",
+  "bloco": "09",
+  "tipo": "extra",
+  "segmento": "ficar",
+  "texto": "Quando quiser... mexe os dedos... abre os olhos devagar... e olha em volta.",
+  "duracao": 5.71
+ },
+ {
+  "id": "fim",
+  "bloco": "09",
+  "tipo": "geral",
+  "segmento": "ficar",
+  "texto": "Terminou. Leva isso com você... o ar solto... o peso no chão.",
+  "duracao": 6.14
+ },
+ {
+  "id": "entra-1",
+  "bloco": "10",
+  "tipo": "deixa",
+  "segmento": null,
+  "texto": "Entra...",
+  "duracao": 1.44
+ },
+ {
+  "id": "entra-2",
+  "bloco": "10",
+  "tipo": "deixa",
+  "segmento": null,
+  "texto": "Deixa entrar...",
+  "duracao": 1.68
+ },
+ {
+  "id": "entra-3",
+  "bloco": "10",
+  "tipo": "deixa",
+  "segmento": null,
+  "texto": "O ar entra sozinho...",
+  "duracao": 1.73
+ },
+ {
+  "id": "solta-1",
+  "bloco": "10",
+  "tipo": "deixa",
+  "segmento": null,
+  "texto": "Solta...",
+  "duracao": 1.61
+ },
+ {
+  "id": "solta-2",
+  "bloco": "10",
+  "tipo": "deixa",
+  "segmento": null,
+  "texto": "Deixa sair...",
+  "duracao": 1.18
+ },
+ {
+  "id": "solta-3",
+  "bloco": "10",
+  "tipo": "deixa",
+  "segmento": null,
+  "texto": "Solta tudo...",
+  "duracao": 1.46
+ },
+ {
+  "id": "espera-1",
+  "bloco": "10",
+  "tipo": "deixa",
+  "segmento": null,
+  "texto": "Espera...",
+  "duracao": 0.96
+ },
+ {
+  "id": "espera-2",
+  "bloco": "10",
+  "tipo": "deixa",
+  "segmento": null,
+  "texto": "Fica no vazio...",
+  "duracao": 1.44
+ },
+ {
+  "id": "espera-3",
+  "bloco": "10",
+  "tipo": "deixa",
+  "segmento": null,
+  "texto": "Espera ele voltar...",
+  "duracao": 1.94
+ },
+ {
+  "id": "outro-lado-1",
+  "bloco": "10",
+  "tipo": "deixa",
+  "segmento": null,
+  "texto": "Agora o outro lado.",
+  "duracao": 1.73
+ },
+ {
+  "id": "outro-lado-2",
+  "bloco": "10",
+  "tipo": "deixa",
+  "segmento": null,
+  "texto": "Troca de lado...",
+  "duracao": 1.08
+ },
+ {
+  "id": "ultima",
+  "bloco": "10",
+  "tipo": "deixa",
+  "segmento": null,
+  "texto": "Mais uma... a última.",
+  "duracao": 2.5
+ },
+ {
+  "id": "sinais-normais",
+  "bloco": "11",
+  "tipo": "geral",
+  "segmento": null,
+  "texto": "Antes de começar... bocejo, suspiro, lágrima, tremor leve nas pernas ou no queixo, formigamento, calor... tudo isso é o corpo soltando. É normal. Agora... se vier tontura, uma ansiedade forte, ou um choro que não passa... aperta ficou forte. Aí a gente para.",
+  "duracao": 24.12
+ },
+ {
+  "id": "pausa-aterrar",
+  "bloco": "11",
+  "tipo": "pausa",
+  "segmento": null,
+  "texto": "Tudo bem. Para um pouco. Abre os olhos... olha o quarto em volta... e repara no que você tá vendo. Apoia os pés no chão... sente o chão. E solta o ar devagar... bem devagar. Você tá aqui.",
+  "duracao": 19.2
+ },
+ {
+  "id": "pausa-aterrar-meio",
+  "bloco": "11",
+  "tipo": "pausa",
+  "segmento": null,
+  "texto": "Só a saída do ar... longa. A entrada vem quando vier.",
+  "duracao": 5.14
+ },
+ {
+  "id": "pausa-aterrar-fim",
+  "bloco": "11",
+  "tipo": "pausa",
+  "segmento": null,
+  "texto": "Quando quiser... pode voltar pra rotina. Ou pode encerrar por hoje. As duas coisas tão certas.",
+  "duracao": 7.1
+ }
+]
