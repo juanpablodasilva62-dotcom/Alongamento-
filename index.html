@@ -59,6 +59,11 @@
 
     <ol class="segmentos" id="lista-segmentos" aria-label="Segmentos"></ol>
 
+    <section class="historico" id="historico" hidden aria-labelledby="historico-titulo">
+      <h2 class="historico-titulo" id="historico-titulo">Tensão, antes → depois</h2>
+      <ol class="historico-lista" id="historico-lista"></ol>
+    </section>
+
     <footer class="inicio-pe">
       <button type="button" class="btn btn-texto" id="btn-ajustes">Ajustes</button>
     </footer>
@@ -143,6 +148,46 @@
     </footer>
     <div class="ficar-escuro" id="ficar-escuro" aria-hidden="true"></div>
   </section>
+
+  <!-- 6. Antes de começar: só na Completa -->
+  <section class="tela tela-antes" id="tela-antes" hidden>
+    <div class="tela-miolo">
+      <p class="rotulo">Antes de começar</p>
+      <p class="texto-grande" id="antes-texto"></p>
+    </div>
+    <footer class="tela-pe pe-coluna">
+      <button type="button" class="btn btn-contorno btn-largo" id="btn-pronto">Tô pronto</button>
+      <button type="button" class="btn btn-texto" id="btn-antes-voltar">voltar</button>
+    </footer>
+  </section>
+
+  <!-- 7. Check-in de tensão: antes e depois -->
+  <section class="tela tela-checkin" id="tela-checkin" hidden>
+    <div class="tela-miolo">
+      <p class="rotulo" id="checkin-rotulo">Antes</p>
+      <h1 class="titulo-grande">Quão tenso você tá agora?</h1>
+      <div class="escala-11" id="checkin-botoes" role="group" aria-label="tensão, de 0 a 10"></div>
+      <p class="escala-pontas"><span>0 · nada tenso</span><span>10 · o mais tenso possível</span></p>
+    </div>
+    <footer class="tela-pe pe-linha">
+      <button type="button" class="btn btn-texto" id="btn-checkin-voltar">voltar</button>
+      <button type="button" class="btn btn-texto" id="btn-checkin-pular">Pular</button>
+    </footer>
+  </section>
+
+  <!-- 8. Antes → agora -->
+  <section class="tela tela-resultado" id="tela-resultado" hidden>
+    <div class="tela-miolo">
+      <p class="rotulo">Tensão</p>
+      <p class="resultado" id="resultado-texto"></p>
+    </div>
+    <footer class="tela-pe">
+      <button type="button" class="btn btn-contorno btn-largo" id="btn-resultado-seguir">seguir</button>
+    </footer>
+  </section>
+
+  <!-- 9. Feedback: montado por js/checkin.js -->
+  <section class="tela tela-feedback" id="tela-feedback" hidden></section>
 
 </main>
 
